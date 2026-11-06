@@ -13,11 +13,17 @@ function parsePort(value: string | undefined): number {
 export interface ApiConfig {
   host: string;
   port: number;
+  databaseUrl: string;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
+  const databaseUrl = env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL が設定されていません(.env を確認してください)");
+  }
   return {
     host: env.API_HOST || DEFAULT_HOST,
     port: parsePort(env.API_PORT),
+    databaseUrl,
   };
 }

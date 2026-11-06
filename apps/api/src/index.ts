@@ -1,12 +1,28 @@
 import { serve } from "@hono/node-server";
+import { createDatabase, getCurrentPatch, listChampions } from "@draftgg/db";
 import { Hono } from "hono";
 
 import { loadConfig } from "./mod/config/index.js";
-import { routes } from "./routes/index.js";
+import { createRoutes } from "./routes/index.js";
 
 const config = loadConfig();
+const { db, close } = createDatabase(config.databaseUrl);
 
-const app = new Hono().route("/api", routes);
+const app = new Hono().route(
+  "/api",
+  createRoutes({
+    champions: {
+      getCurrentPatch: () => getCurrentPatch(db),
+      listChampions: () => listChampions(db),
+    },
+  }),
+);
+
+// 想定外のエラーは内容を返さず、ログにだけ残す
+app.onError((error, c) => {
+  console.log(JSON.stringify({ level: "error", msg: "request failed", error: error.message }));
+  return c.json({ error: "internal_error" }, 500);
+});
 
 const server = serve({ fetch: app.fetch, hostname: config.host, port: config.port }, (info) => {
   console.log(
@@ -17,7 +33,7 @@ const server = serve({ fetch: app.fetch, hostname: config.host, port: config.por
 function shutdown(signal: string): void {
   console.log(JSON.stringify({ level: "info", msg: "api stopping", signal }));
   server.close((err) => {
-    process.exit(err ? 1 : 0);
+    void close().finally(() => process.exit(err ? 1 : 0));
   });
 }
 
