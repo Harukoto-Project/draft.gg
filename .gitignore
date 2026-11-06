@@ -1,0 +1,21 @@
+CLAUDE.md
+
+# dependencies
+node_modules/
+
+# build outputs
+dist/
+.next/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+
+# env (秘密情報は .env にだけ書く。キー名は .env.example に置く)
+.env
+.env.*
+!.env.example
+
+# logs / OS
+*.log
+.DS_Store
+Thumbs.db
