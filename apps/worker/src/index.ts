@@ -1,15 +1,48 @@
-// 定期バッチの常駐プロセス。スケジューラとジョブは mod/ に追加していく。
-console.log(JSON.stringify({ level: "info", msg: "worker started" }));
+import { createDatabase, finishJobRun, startJobRun } from "@draftgg/db";
 
-// ジョブ登録(スケジューラ)を実装するまで、プロセスを常駐させるための待機。
-const keepAlive = setInterval(() => {}, 1 << 30);
+import { loadConfig } from "./mod/config/index.js";
+import { createJobs } from "./mod/jobs/index.js";
+import { log } from "./mod/logger/index.js";
+import { createJobRunner } from "./mod/runner/index.js";
+import { startScheduler } from "./mod/scheduler/index.js";
 
-// シグナルのリスナーを登録すると Node の既定の終了処理が外れるため、後片付けのあとに明示的に終了する。
-function shutdown(signal: string): void {
-  console.log(JSON.stringify({ level: "info", msg: "worker stopping", signal }));
-  clearInterval(keepAlive);
-  process.exit(0);
+const config = loadConfig();
+const { db, close } = createDatabase(config.databaseUrl);
+
+const runner = createJobRunner({
+  logger: log,
+  store: {
+    start: (job, startedAt) => startJobRun(db, job, startedAt),
+    finish: (id, result) => finishJobRun(db, id, result),
+  },
+});
+
+const scheduler = startScheduler(createJobs(db), runner, log);
+log("info", "worker started");
+
+let stopping = false;
+
+async function shutdown(signal: string): Promise<void> {
+  if (stopping) return;
+  stopping = true;
+  log("info", "worker stopping", { signal });
+  let exitCode = 0;
+  try {
+    await scheduler.stop();
+    // 再試行の待ち(最大 2 分)で止まらないよう、待ちを中断してから実行中の試行の終了を待つ
+    runner.cancelRetries();
+    await runner.drain();
+    await close();
+  } catch (error) {
+    exitCode = 1;
+    log("error", "worker shutdown failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  } finally {
+    // シグナルのリスナーを登録しているため、明示的に終了しないとプロセスが残る
+    process.exit(exitCode);
+  }
 }
 
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => void shutdown("SIGTERM"));
+process.on("SIGINT", () => void shutdown("SIGINT"));

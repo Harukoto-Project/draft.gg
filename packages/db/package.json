@@ -10,7 +10,19 @@
     }
   },
   "scripts": {
-    "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --env-file-if-exists=../../.env node_modules/drizzle-kit/bin.cjs migrate"
+  },
+  "dependencies": {
+    "@draftgg/shared": "workspace:*",
+    "drizzle-orm": "^0.45.4",
+    "mysql2": "^3.24.6"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.11",
+    "vitest": "^5.1.0"
   }
 }

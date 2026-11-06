@@ -11,6 +11,8 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@draftgg/db": "workspace:*",
+    "@draftgg/shared": "workspace:*",
     "@hono/node-server": "^2.1.6",
     "hono": "^4.13.16"
   },
