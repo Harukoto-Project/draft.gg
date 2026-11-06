@@ -16,6 +16,7 @@ ExecStart=/usr/bin/node dist/index.js
 Restart=always
 RestartSec=10
 KillSignal=SIGTERM
+# 停止時は再試行の待ちを中断し、実行中の1試行(Data Dragon の取得は1リクエスト 15 秒で打ち切り)だけを待つ
 TimeoutStopSec=60
 
 # 権限の絞り込み

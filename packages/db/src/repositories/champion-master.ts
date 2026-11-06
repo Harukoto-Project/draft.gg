@@ -19,6 +19,12 @@ export interface ChampionMasterInput {
   }>;
 }
 
+/**
+ * 保存を許可する最低件数。Data Dragon の champion.json は 170 件前後なので、それを大きく下回る
+ * 不完全なレスポンスでパッチだけが進み、古いマスタが混ざるのを防ぐ。
+ */
+export const MIN_CHAMPIONS = 150;
+
 type Writer = Pick<Database, "insert">;
 
 /** ON DUPLICATE KEY UPDATE で挿入しようとした値を参照する(列名は修飾しない) */
@@ -50,8 +56,10 @@ export function buildChampionUpsert(db: Writer, rows: ChampionMasterInput["champ
  * 途中で失敗した場合は、前回のデータが残る。
  */
 export async function saveChampionMaster(db: Database, input: ChampionMasterInput): Promise<void> {
-  if (input.champions.length === 0) {
-    throw new Error("チャンピオン一覧が空のため、保存を中止しました");
+  if (input.champions.length < MIN_CHAMPIONS) {
+    throw new Error(
+      `チャンピオン数が ${input.champions.length} 件で、最低件数(${MIN_CHAMPIONS})を下回るため、保存を中止しました`,
+    );
   }
 
   await db.transaction(async (tx) => {

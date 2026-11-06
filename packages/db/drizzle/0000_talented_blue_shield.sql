@@ -9,7 +9,7 @@ CREATE TABLE `champions` (
 	`image_version` varchar(32) NOT NULL,
 	CONSTRAINT `champions_id` PRIMARY KEY(`id`),
 	CONSTRAINT `champions_numeric_key_unique` UNIQUE(`numeric_key`)
-);
+) DEFAULT CHARSET=utf8mb4;
 --> statement-breakpoint
 CREATE TABLE `job_runs` (
 	`id` bigint unsigned AUTO_INCREMENT NOT NULL,
@@ -20,13 +20,13 @@ CREATE TABLE `job_runs` (
 	`summary` json,
 	`error` text,
 	CONSTRAINT `job_runs_id` PRIMARY KEY(`id`)
-);
+) DEFAULT CHARSET=utf8mb4;
 --> statement-breakpoint
 CREATE TABLE `patches` (
 	`version` varchar(16) NOT NULL,
 	`released_at` datetime,
 	`is_current` boolean NOT NULL DEFAULT false,
 	CONSTRAINT `patches_version` PRIMARY KEY(`version`)
-);
+) DEFAULT CHARSET=utf8mb4;
 --> statement-breakpoint
 CREATE INDEX `job_runs_job_started_at_idx` ON `job_runs` (`job`,`started_at`);

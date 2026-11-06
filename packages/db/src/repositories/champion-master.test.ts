@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from "vitest";
 
 import { createDatabase } from "../client.js";
-import { buildChampionUpsert } from "./champion-master.js";
+import { buildChampionUpsert, MIN_CHAMPIONS, saveChampionMaster } from "./champion-master.js";
 
 // 接続はクエリを実行するまで張られないため、SQL の組み立てだけを検証できる
 const connection = createDatabase("mysql://user:password@127.0.0.1:3306/draftgg_test");
@@ -34,5 +34,32 @@ describe("buildChampionUpsert", () => {
     expect(updatePart).toContain("`image_version` = values(`image_version`)");
     expect(updatePart).not.toContain("damage_type");
     expect(updatePart).not.toContain("traits");
+  });
+});
+
+describe("saveChampionMaster", () => {
+  function createInput(count: number) {
+    return {
+      patch: "16.22",
+      champions: Array.from({ length: count }, (_, i) => ({
+        id: `Champion${i}`,
+        numericKey: i + 1,
+        nameJa: `チャンピオン${i}`,
+        nameEn: `Champion${i}`,
+        tags: ["Mage"],
+        imageVersion: "16.22.1",
+      })),
+    };
+  }
+
+  // 件数の検証は DB に触れる前に行うため、接続できない状態でも検証できる
+  it("空の一覧は保存しない", async () => {
+    await expect(saveChampionMaster(connection.db, createInput(0))).rejects.toThrow("最低件数");
+  });
+
+  it("最低件数に満たない一覧は保存しない", async () => {
+    await expect(saveChampionMaster(connection.db, createInput(MIN_CHAMPIONS - 1))).rejects.toThrow(
+      "最低件数",
+    );
   });
 });
