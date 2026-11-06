@@ -9,7 +9,10 @@ Type=simple
 User=draftgg
 Group=draftgg
 WorkingDirectory=/opt/draftgg/apps/web
-EnvironmentFile=/opt/draftgg/.env
+# WEB_PORT の既定値(apps/web の既定と同じ 3000)。.env に値があれば、次の行で上書きされる
+Environment=WEB_PORT=3000
+# 先頭の "-" で、.env がまだ無くても起動できるようにする
+EnvironmentFile=-/opt/draftgg/.env
 Environment=NODE_ENV=production
 # 127.0.0.1 のみで待ち受け、外部へは cloudflared 経由で公開する
 ExecStart=/usr/bin/node node_modules/next/dist/bin/next start -H 127.0.0.1 -p ${WEB_PORT}
@@ -19,6 +22,9 @@ KillSignal=SIGTERM
 TimeoutStopSec=20
 
 # 権限の絞り込み
+# ProtectHome=true は /home と /root を隠す。pnpm はストアとプロジェクトが別のファイルシステムだと
+# node_modules からストアへシンボリックリンクを作るため、ストアがホーム配下にあると起動に失敗する。
+# pnpm のストアは /opt/draftgg 配下(プロジェクトと同じファイルシステム。例: store-dir=/opt/draftgg/.pnpm-store)に置く。
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true

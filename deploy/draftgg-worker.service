@@ -9,7 +9,8 @@ Type=simple
 User=draftgg
 Group=draftgg
 WorkingDirectory=/opt/draftgg/apps/worker
-EnvironmentFile=/opt/draftgg/.env
+# 先頭の "-" で、.env がまだ無くても起動できるようにする
+EnvironmentFile=-/opt/draftgg/.env
 Environment=NODE_ENV=production
 ExecStart=/usr/bin/node dist/index.js
 Restart=always
@@ -18,6 +19,9 @@ KillSignal=SIGTERM
 TimeoutStopSec=60
 
 # 権限の絞り込み
+# ProtectHome=true は /home と /root を隠す。pnpm はストアとプロジェクトが別のファイルシステムだと
+# node_modules からストアへシンボリックリンクを作るため、ストアがホーム配下にあると起動に失敗する。
+# pnpm のストアは /opt/draftgg 配下(プロジェクトと同じファイルシステム。例: store-dir=/opt/draftgg/.pnpm-store)に置く。
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
