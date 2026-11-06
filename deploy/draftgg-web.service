@@ -1,0 +1,35 @@
+# Next.js(web)。/etc/systemd/system/ に置いて使うひな形。
+# 配置先(/opt/draftgg)・実行ユーザー・node のパスは環境に合わせて変更する。
+[Unit]
+Description=Draft.GG web (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+User=draftgg
+Group=draftgg
+WorkingDirectory=/opt/draftgg/apps/web
+# WEB_PORT の既定値(apps/web の既定と同じ 3000)。.env に値があれば、次の行で上書きされる
+Environment=WEB_PORT=3000
+# 先頭の "-" で、.env がまだ無くても起動できるようにする
+EnvironmentFile=-/opt/draftgg/.env
+Environment=NODE_ENV=production
+# 127.0.0.1 のみで待ち受け、外部へは cloudflared 経由で公開する
+ExecStart=/usr/bin/node node_modules/next/dist/bin/next start -H 127.0.0.1 -p ${WEB_PORT}
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
+# 権限の絞り込み
+# ProtectHome=true は /home と /root を隠す。pnpm はストアとプロジェクトが別のファイルシステムだと
+# node_modules からストアへシンボリックリンクを作るため、ストアがホーム配下にあると起動に失敗する。
+# pnpm のストアは /opt/draftgg 配下(プロジェクトと同じファイルシステム。例: store-dir=/opt/draftgg/.pnpm-store)に置く。
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/draftgg/apps/web/.next
+
+[Install]
+WantedBy=multi-user.target

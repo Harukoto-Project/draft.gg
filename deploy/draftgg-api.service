@@ -1,0 +1,34 @@
+# Hono(api)。/etc/systemd/system/ に置いて使うひな形。
+# 配置先(/opt/draftgg)・実行ユーザー・node のパスは環境に合わせて変更する。
+[Unit]
+Description=Draft.GG api (Hono)
+After=network.target mysql.service
+
+[Service]
+Type=simple
+User=draftgg
+Group=draftgg
+WorkingDirectory=/opt/draftgg/apps/api
+# 先頭の "-" で、.env がまだ無くても起動できるようにする
+EnvironmentFile=-/opt/draftgg/.env
+Environment=NODE_ENV=production
+# 待ち受けは常にループバックに固定する(.env の API_HOST より後に書いて上書きする)。
+# ポートは .env の API_PORT(既定 3001)
+Environment=API_HOST=127.0.0.1
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
+# 権限の絞り込み
+# ProtectHome=true は /home と /root を隠す。pnpm はストアとプロジェクトが別のファイルシステムだと
+# node_modules からストアへシンボリックリンクを作るため、ストアがホーム配下にあると起動に失敗する。
+# pnpm のストアは /opt/draftgg 配下(プロジェクトと同じファイルシステム。例: store-dir=/opt/draftgg/.pnpm-store)に置く。
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
