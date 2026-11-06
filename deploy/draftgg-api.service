@@ -1,0 +1,28 @@
+# Hono(api)。/etc/systemd/system/ に置いて使うひな形。
+# 配置先(/opt/draftgg)・実行ユーザー・node のパスは環境に合わせて変更する。
+[Unit]
+Description=Draft.GG api (Hono)
+After=network.target mysql.service
+
+[Service]
+Type=simple
+User=draftgg
+Group=draftgg
+WorkingDirectory=/opt/draftgg/apps/api
+EnvironmentFile=/opt/draftgg/.env
+Environment=NODE_ENV=production
+# 待ち受けは .env の API_HOST / API_PORT(既定は 127.0.0.1:3001)
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
+# 権限の絞り込み
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

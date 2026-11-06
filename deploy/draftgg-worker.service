@@ -1,0 +1,27 @@
+# 定期バッチ(worker)。/etc/systemd/system/ に置いて使うひな形。
+# 配置先(/opt/draftgg)・実行ユーザー・node のパスは環境に合わせて変更する。
+[Unit]
+Description=Draft.GG worker (scheduled jobs)
+After=network.target mysql.service
+
+[Service]
+Type=simple
+User=draftgg
+Group=draftgg
+WorkingDirectory=/opt/draftgg/apps/worker
+EnvironmentFile=/opt/draftgg/.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=10
+KillSignal=SIGTERM
+TimeoutStopSec=60
+
+# 権限の絞り込み
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
