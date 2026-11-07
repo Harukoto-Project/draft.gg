@@ -39,9 +39,12 @@ export const DraftContext = createContext<DraftContextValue | null>(null);
 export function DraftProvider({ children }: { children: ReactNode }) {
   const ready = useHydrated();
   const state = useSyncExternalStore(subscribeDraft, getDraftSnapshot, getServerDraft);
-  const [selectedStep, setSelectedStep] = useState<number | null>(null);
-  const [selectionOwned, setSelectionOwned] = useState(false);
-  const activeStep = selectionOwned ? selectedStep : nextSuggestedStep(state, -1);
+  /** ユーザーが選んだ枠。形式を覚えておき、別タブで形式が変わったら無効にする */
+  const [selection, setSelection] = useState<{ step: number | null; format: DraftFormat } | null>(
+    null,
+  );
+  const activeStep =
+    selection && selection.format === state.format ? selection.step : nextSuggestedStep(state, -1);
 
   const value = useMemo<DraftContextValue>(
     () => ({
@@ -49,16 +52,14 @@ export function DraftProvider({ children }: { children: ReactNode }) {
       state,
       activeStep,
       selectStep: (step) => {
-        setSelectionOwned(true);
-        setSelectedStep(step);
+        setSelection({ step, format: state.format });
       },
       pickChampion: (championId) => {
         if (activeStep === null) return;
         const next = placeChampion(state, activeStep, championId);
         if (next === state) return;
         writeDraft(next);
-        setSelectionOwned(true);
-        setSelectedStep(nextSuggestedStep(next, activeStep));
+        setSelection({ step: nextSuggestedStep(next, activeStep), format: next.format });
       },
       clearActive: () => {
         if (activeStep === null) return;
@@ -72,8 +73,7 @@ export function DraftProvider({ children }: { children: ReactNode }) {
       chooseFormat: (format) => {
         const next = changeFormat(state, format);
         if (next !== state) writeDraft(next);
-        setSelectionOwned(false);
-        setSelectedStep(null);
+        setSelection(null);
       },
       chooseSide: (side) => {
         const next = setMySide(state, side);
@@ -81,8 +81,7 @@ export function DraftProvider({ children }: { children: ReactNode }) {
       },
       reset: () => {
         writeDraft(createEmptyDraft({ format: state.format, mySide: state.mySide }));
-        setSelectionOwned(false);
-        setSelectedStep(null);
+        setSelection(null);
       },
     }),
     [activeStep, ready, state],

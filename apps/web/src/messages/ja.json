@@ -50,6 +50,7 @@
     "loadError": "チャンピオン一覧を読み込めませんでした。",
     "retry": "再読み込み",
     "emptyCatalog": "チャンピオンがまだ取り込まれていません。取り込みが終わってから再読み込みしてください。",
-    "slotLabel": "{side}の{type}{index}"
+    "slotLabel": "{side}の{type}{index}",
+    "assignRole": "{slot} {champion}を{role}にする"
   }
 }

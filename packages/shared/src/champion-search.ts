@@ -196,8 +196,27 @@ function lastVowel(romaji: string): string | null {
   return null;
 }
 
+const ROMAN_NUMERALS: Record<string, string> = {
+  Ⅰ: "1",
+  Ⅱ: "2",
+  Ⅲ: "3",
+  Ⅳ: "4",
+  Ⅴ: "5",
+  Ⅵ: "6",
+  Ⅶ: "7",
+  Ⅷ: "8",
+  Ⅸ: "9",
+  Ⅹ: "10",
+};
+
+/**
+ * 比較用の形にそろえる。空白・記号(中黒、ハイフン、アポストロフィ、＝、＆)を落とし、
+ * ローマ数字を算用数字に、カタカナをひらがなに、英字を小文字にする。
+ */
 function compact(input: string): string {
-  return input.replace(/[\s・･·\-.''’']/g, "").toLowerCase();
+  const numerals = input.replace(/[Ⅰ-Ⅹ]/g, (char) => ROMAN_NUMERALS[char] ?? char);
+  const normalized = numerals.normalize("NFKC").replace(/[\s・･·\-.'’=&]/g, "");
+  return toHiragana(normalized.toLowerCase());
 }
 
 function toHiragana(input: string): string {

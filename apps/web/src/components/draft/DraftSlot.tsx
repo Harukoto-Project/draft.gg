@@ -8,6 +8,7 @@ import ja from "@/messages/ja.json";
 export function DraftSlot({
   turn,
   index,
+  championId,
   champion,
   active,
   suggested,
@@ -16,6 +17,8 @@ export function DraftSlot({
 }: {
   turn: DraftTurn;
   index: number;
+  /** 保存されているチャンピオンID。一覧が未取得で `champion` が無いときはIDを出す */
+  championId: string | null;
   champion: Champion | null;
   active: boolean;
   suggested: boolean;
@@ -31,14 +34,16 @@ export function DraftSlot({
   return (
     <button
       type="button"
-      aria-label={champion ? `${label} ${champion.nameJa}` : label}
+      aria-label={champion || championId ? `${label} ${champion?.nameJa ?? championId}` : label}
       aria-pressed={active}
       onClick={onSelect}
       className={cn(
         "relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden border bg-background transition-colors focus-visible:ring-2 focus-visible:ring-ring",
         active && "border-gold bg-gold/15",
-        !active && suggested && "border-gold/70",
-        !active && !suggested && "border-dashed border-border",
+        !active && suggested && "border-dashed",
+        !active && suggested && (turn.side === "blue" ? "border-side-blue" : "border-side-red"),
+        !active && !suggested && !champion && !championId && "border-dashed border-border",
+        !active && !suggested && (champion || championId) && "border-border",
         className,
       )}
     >
@@ -66,9 +71,19 @@ export function DraftSlot({
             </svg>
           ) : null}
         </>
+      ) : championId ? (
+        <span className="px-0.5 text-center text-[10px] leading-tight break-all text-foreground">
+          {championId}
+        </span>
       ) : (
         <span className="text-xs text-muted-foreground">{index}</span>
       )}
+      {active ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-10 border-[3px] border-gold"
+        />
+      ) : null}
     </button>
   );
 }

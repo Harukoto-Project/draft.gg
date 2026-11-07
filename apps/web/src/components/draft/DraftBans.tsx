@@ -48,18 +48,22 @@ export function DraftBans({
         <span className="text-xs font-normal text-muted-foreground">{ja.draft.ban}</span>
       </h2>
       <div className="grid grid-cols-5 gap-1">
-        {bans.map((turn, index) => (
-          <DraftSlot
-            key={turn.step}
-            turn={turn}
-            index={index + 1}
-            champion={championFor(championsById, actionChampionId(state, turn.step))}
-            active={activeStep === turn.step}
-            suggested={suggested.has(turn.step)}
-            onSelect={() => selectStep(turn.step)}
-            className="w-full"
-          />
-        ))}
+        {bans.map((turn, index) => {
+          const championId = actionChampionId(state, turn.step);
+          return (
+            <DraftSlot
+              key={turn.step}
+              turn={turn}
+              index={index + 1}
+              championId={championId}
+              champion={championFor(championsById, championId)}
+              active={activeStep === turn.step}
+              suggested={suggested.has(turn.step)}
+              onSelect={() => selectStep(turn.step)}
+              className="w-full"
+            />
+          );
+        })}
       </div>
       {showClear ? (
         <button

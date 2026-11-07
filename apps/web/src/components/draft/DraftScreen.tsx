@@ -41,19 +41,24 @@ function DraftWorkspace() {
           <DraftBans
             side="blue"
             championsById={championsById}
-            className="order-1 lg:order-none lg:col-start-1 lg:row-start-1"
+            className="lg:col-start-1 lg:row-start-1"
           />
           <DraftBans
             side="red"
             championsById={championsById}
-            className="order-2 lg:order-none lg:col-start-3 lg:row-start-1"
+            className="lg:col-start-3 lg:row-start-1"
           />
           <DraftPicks
             side="blue"
             championsById={championsById}
-            className="order-4 lg:order-none lg:col-start-1 lg:row-start-2"
+            className="lg:col-start-1 lg:row-start-2"
           />
-          <div className="order-6 col-span-2 flex h-[28rem] min-h-0 flex-col overflow-hidden bg-card p-3 lg:order-none lg:col-span-1 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-auto">
+          <DraftPicks
+            side="red"
+            championsById={championsById}
+            className="lg:col-start-3 lg:row-start-2"
+          />
+          <div className="col-span-2 flex h-[28rem] min-h-0 flex-col overflow-hidden bg-card p-3 lg:col-span-1 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-auto">
             <div className="min-h-0 flex-1">
               <ChampionGrid
                 taken={championIdsInUse(draft.state)}
@@ -62,11 +67,6 @@ function DraftWorkspace() {
               />
             </div>
           </div>
-          <DraftPicks
-            side="red"
-            championsById={championsById}
-            className="order-5 lg:order-none lg:col-start-3 lg:row-start-2"
-          />
         </div>
       </div>
     </div>

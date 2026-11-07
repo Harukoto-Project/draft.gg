@@ -40,6 +40,7 @@ export function DraftPicks({
               <PickStrip
                 turn={turn}
                 index={index + 1}
+                championId={championId}
                 champion={championFor(championsById, championId)}
                 position={championId ? positionOfChampion(state, side, championId) : null}
                 active={activeStep === turn.step}

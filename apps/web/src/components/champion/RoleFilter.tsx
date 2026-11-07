@@ -31,7 +31,7 @@ export function RoleFilter({
         className={cn(
           "h-6 shrink-0 cursor-pointer border px-2 text-xs transition-colors focus-visible:ring-2 focus-visible:ring-ring",
           value === "all"
-            ? "border-gold bg-gold text-background"
+            ? "border-gold bg-gold/20 text-foreground"
             : "border-border text-muted-foreground hover:text-foreground",
         )}
       >

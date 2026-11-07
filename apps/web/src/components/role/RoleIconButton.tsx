@@ -8,21 +8,24 @@ export function RoleIconButton({
   position,
   pressed,
   disabled,
+  label,
   onClick,
   className,
 }: {
   position: Position;
   pressed: boolean;
   disabled?: boolean;
+  /** 読み上げ用の名前。同じ画面に同じロールのボタンが並ぶときに、対象を含めて渡す */
+  label?: string;
   onClick: () => void;
   className?: string;
 }) {
-  const label = POSITION_LABELS[position];
+  const positionLabel = POSITION_LABELS[position];
   return (
     <button
       type="button"
-      aria-label={label}
-      title={label}
+      aria-label={label ?? positionLabel}
+      title={positionLabel}
       aria-pressed={pressed}
       disabled={disabled}
       onClick={onClick}
