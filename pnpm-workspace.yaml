@@ -1,3 +1,7 @@
 packages:
   - apps/*
   - packages/*
+
+# Vitest が使う esbuild のバイナリ取得。未承認のままだと pnpm 12 の install が失敗する。
+allowBuilds:
+  esbuild: true

@@ -4,5 +4,12 @@
   "categories": {
     "correctness": "error"
   },
-  "ignorePatterns": ["**/dist/**", "**/.next/**", "**/.turbo/**", "**/node_modules/**"]
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/.next/**",
+    "**/.turbo/**",
+    "**/node_modules/**",
+    "apps/web/src/components/ui/**",
+    "apps/web/src/hooks/use-mobile.ts"
+  ]
 }

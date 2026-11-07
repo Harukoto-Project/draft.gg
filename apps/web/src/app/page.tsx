@@ -1,10 +1,5 @@
-import ja from "@/messages/ja.json";
+import { redirect } from "next/navigation";
 
 export default function HomePage() {
-  return (
-    <main>
-      <h1>{ja.app.title}</h1>
-      <p>{ja.app.description}</p>
-    </main>
-  );
+  redirect("/draft");
 }
