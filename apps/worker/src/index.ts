@@ -2,6 +2,7 @@ import { createDatabase, finishJobRun, startJobRun } from "@draftgg/db";
 
 import { loadConfig } from "./mod/config/index.js";
 import { createJobs } from "./mod/jobs/index.js";
+import type { Job } from "./mod/runner/index.js";
 import { log } from "./mod/logger/index.js";
 import { createJobRunner } from "./mod/runner/index.js";
 import { startScheduler } from "./mod/scheduler/index.js";
@@ -17,7 +18,22 @@ const runner = createJobRunner({
   },
 });
 
-const scheduler = startScheduler(createJobs(db), runner, log);
+let jobs: Job[] = [];
+jobs = createJobs(db, {
+  onNewPatch() {
+    const meta = jobs.find((job) => job.name === "opgg-meta");
+    const champion = jobs.find((job) => job.name === "opgg-champion");
+    runner.track(
+      (async () => {
+        if (!meta) return;
+        const outcome = await runner.run(meta);
+        // メタ一覧のロール割合が揃ってから、主要ロールの分析を前倒しする
+        if (outcome === "success" && champion) await runner.run(champion);
+      })(),
+    );
+  },
+});
+const scheduler = startScheduler(jobs, runner, log);
 log("info", "worker started");
 
 let stopping = false;
@@ -29,8 +45,8 @@ async function shutdown(signal: string): Promise<void> {
   let exitCode = 0;
   try {
     await scheduler.stop();
-    // 再試行の待ち(最大 2 分)で止まらないよう、待ちを中断してから実行中の試行の終了を待つ
-    runner.cancelRetries();
+    // 再試行の待ちと、長いジョブ(opgg-champion は十数分)の実行を中断してから、実行中の試行の終了を待つ
+    runner.abort();
     await runner.drain();
     await close();
   } catch (error) {

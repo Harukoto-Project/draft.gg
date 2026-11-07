@@ -21,12 +21,18 @@ export interface JobRunner {
   /** ジョブを実行する。同じジョブが実行中なら何もせず "skipped" を返す */
   run(job: Job): Promise<RunOutcome>;
   /**
-   * 再試行の待ちを中断し、以降の再試行を行わないようにする(停止時に使う)。
-   * 実行中の job.run() は中断せず、その試行が終わるまで待つ。
+   * 停止を要求する(停止時に使う)。再試行の待ちを中断して以降の再試行を行わず、
+   * 実行中の job.run() には signal の中断を伝える。
+   * signal を確認しないジョブは、その試行が終わるまで待つことになる。
    */
-  cancelRetries(): void;
+  abort(): void;
   /** 実行中のジョブがすべて終わるまで待つ(停止時に使う) */
   drain(): Promise<void>;
+  /**
+   * ジョブの外で始めた後続処理を、停止時の drain が終わるまで待つ。
+   * 新パッチ検知で OP.GG のジョブを続けて起動するときに使う。
+   */
+  track(work: Promise<unknown>): void;
 }
 
 function abortableSleep(ms: number, signal: AbortSignal): Promise<void> {
@@ -51,7 +57,8 @@ export function createJobRunner(options: RunnerOptions): JobRunner {
 
   // 多重起動の防止(worker は1プロセスのため、プロセス内で管理する)
   const running = new Map<string, Promise<RunOutcome>>();
-  const retryAbort = new AbortController();
+  const background = new Set<Promise<unknown>>();
+  const stopSignal = new AbortController();
 
   /** 記録の更新に失敗しても、ジョブの結果や再試行には影響させない */
   async function finishQuietly(
@@ -71,12 +78,13 @@ export function createJobRunner(options: RunnerOptions): JobRunner {
   }
 
   async function runWithRetry(job: Job): Promise<RunOutcome> {
-    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const attempts = job.maxAttempts ?? maxAttempts;
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
       // start に失敗した試行は記録が無いため finish を呼ばず、失敗した試行と同じく待って再試行する
       let runId: number | null = null;
       try {
         runId = await store.start(job.name, now());
-        const summary = await job.run();
+        const summary = await job.run(stopSignal.signal);
         await finishQuietly(job, runId, { status: "success", finishedAt: now(), summary });
         logger("info", "job succeeded", { job: job.name, attempt, summary });
         return "success";
@@ -85,12 +93,17 @@ export function createJobRunner(options: RunnerOptions): JobRunner {
         if (runId !== null) {
           await finishQuietly(job, runId, { status: "failed", finishedAt: now(), error: message });
         }
-        logger("error", "job failed", { job: job.name, attempt, maxAttempts, error: message });
+        logger("error", "job failed", {
+          job: job.name,
+          attempt,
+          maxAttempts: attempts,
+          error: message,
+        });
       }
 
-      if (attempt < maxAttempts) {
-        await sleep(baseDelayMs * 4 ** (attempt - 1), retryAbort.signal);
-        if (retryAbort.signal.aborted) {
+      if (attempt < attempts) {
+        await sleep(baseDelayMs * 4 ** (attempt - 1), stopSignal.signal);
+        if (stopSignal.signal.aborted) {
           logger("warn", "job retry cancelled", { job: job.name, attempt });
           break;
         }
@@ -112,12 +125,22 @@ export function createJobRunner(options: RunnerOptions): JobRunner {
       return promise;
     },
 
-    cancelRetries() {
-      retryAbort.abort();
+    abort() {
+      stopSignal.abort();
+    },
+
+    track(work) {
+      const tracked = work.finally(() => {
+        background.delete(tracked);
+      });
+      background.add(tracked);
     },
 
     async drain() {
-      await Promise.allSettled(running.values());
+      // 後続ジョブが drain の途中で次のジョブを起動しても、それも待ち切る
+      while (running.size > 0 || background.size > 0) {
+        await Promise.allSettled([...running.values(), ...background]);
+      }
     },
   };
 }

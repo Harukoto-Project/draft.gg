@@ -27,6 +27,33 @@ describe("createDdragonJob", () => {
     expect(summary).toEqual({ version: "16.22.1", patch: "16.22", champions: 1 });
   });
 
+  it("パッチが変わったときだけ後続の取り込みを起動する", async () => {
+    const onNewPatch = vi.fn();
+    const client: DdragonClient = {
+      fetchLatestVersion: async () => "16.23.1",
+      fetchChampions: async () => [ahri],
+    };
+
+    await createDdragonJob({
+      client,
+      save: async () => {},
+      getCurrentPatch: async () => "16.22",
+      onNewPatch,
+    }).run();
+
+    expect(onNewPatch).toHaveBeenCalledWith("16.23");
+
+    onNewPatch.mockClear();
+    await createDdragonJob({
+      client: { ...client, fetchLatestVersion: async () => "16.22.1" },
+      save: async () => {},
+      getCurrentPatch: async () => "16.22",
+      onNewPatch,
+    }).run();
+
+    expect(onNewPatch).not.toHaveBeenCalled();
+  });
+
   it("取得に失敗したら保存せずエラーにする", async () => {
     const client: DdragonClient = {
       fetchLatestVersion: async () => "16.22.1",
