@@ -12,6 +12,7 @@ import {
   nextSuggestedStep,
   placeChampion,
   positionOfChampion,
+  setMyPosition,
   setMySide,
   sideTurns,
   suggestedSteps,
@@ -119,5 +120,24 @@ describe("進行ルール", () => {
     expect(draftHasChampion(changed)).toBe(false);
     expect(actionsMatchRules(changed)).toBe(true);
     expect(actionsMatchRules({ ...changed, actions: changed.actions.slice(0, 3) })).toBe(false);
+  });
+
+  it("自分のロールは、陣営の変更や形式の変更でも残り、nullで外れる", () => {
+    let draft = createEmptyDraft({ format: "ranked", mySide: "blue" });
+    expect(setMyPosition(draft, null)).toBe(draft);
+
+    draft = setMyPosition(draft, "mid");
+    expect(draft.me).toEqual({ side: "blue", position: "mid" });
+    expect(setMyPosition(draft, "mid")).toBe(draft);
+    expect(draftStateSchema.safeParse(draft).success).toBe(true);
+
+    draft = setMySide(draft, "red");
+    expect(draft.me).toEqual({ side: "red", position: "mid" });
+
+    const changed = changeFormat(draft, "tournament");
+    expect(changed.me).toEqual({ side: "red", position: "mid" });
+    expect(draftStateSchema.safeParse(changed).success).toBe(true);
+
+    expect(setMyPosition(draft, null).me).toBeUndefined();
   });
 });

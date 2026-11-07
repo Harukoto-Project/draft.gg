@@ -7,6 +7,7 @@ import {
   createEmptyDraft,
   nextSuggestedStep,
   placeChampion,
+  setMyPosition,
   setMySide,
 } from "@draftgg/shared";
 import type { DraftFormat, DraftState, Position, Side } from "@draftgg/shared";
@@ -31,6 +32,8 @@ export interface DraftContextValue {
   assignRole: (step: number, position: Position | null) => void;
   chooseFormat: (format: DraftFormat) => void;
   chooseSide: (side: Side) => void;
+  /** 自分のロール。null でチーム向け(ロールを決めない) */
+  chooseMyPosition: (position: Position | null) => void;
   reset: () => void;
 }
 
@@ -79,8 +82,12 @@ export function DraftProvider({ children }: { children: ReactNode }) {
         const next = setMySide(state, side);
         if (next !== state) writeDraft(next);
       },
+      chooseMyPosition: (position) => {
+        const next = setMyPosition(state, position);
+        if (next !== state) writeDraft(next);
+      },
       reset: () => {
-        writeDraft(createEmptyDraft({ format: state.format, mySide: state.mySide }));
+        writeDraft(createEmptyDraft({ format: state.format, mySide: state.mySide, me: state.me }));
         setSelection(null);
       },
     }),

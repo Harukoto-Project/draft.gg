@@ -116,10 +116,16 @@ export function sideTurns(
   return turnsFor(format).filter((turn) => turn.side === side && turn.type === type);
 }
 
-export function createEmptyDraft(input: { format: DraftFormat; mySide: Side }): DraftState {
+export function createEmptyDraft(input: {
+  format: DraftFormat;
+  mySide: Side;
+  /** やり直しや形式変更でも、自分のロールは引き継ぐ */
+  me?: DraftState["me"];
+}): DraftState {
   return {
     format: input.format,
     mySide: input.mySide,
+    ...(input.me ? { me: { side: input.mySide, position: input.me.position } } : {}),
     actions: turnsFor(input.format).map((turn) => ({
       step: turn.step,
       type: turn.type,
@@ -258,9 +264,21 @@ export function setMySide(state: DraftState, mySide: Side): DraftState {
   };
 }
 
+/** 自分のロールを決める。null でチーム向け(ロールを決めない)に戻す */
+export function setMyPosition(state: DraftState, position: Position | null): DraftState {
+  if (position === null) {
+    if (state.me === undefined) return state;
+    const next = { ...state };
+    delete next.me;
+    return next;
+  }
+  if (state.me?.position === position && state.me.side === state.mySide) return state;
+  return { ...state, me: { side: state.mySide, position } };
+}
+
 export function changeFormat(state: DraftState, format: DraftFormat): DraftState {
   if (state.format === format) return state;
-  return createEmptyDraft({ format, mySide: state.mySide });
+  return createEmptyDraft({ format, mySide: state.mySide, me: state.me });
 }
 
 export function positionOfChampion(
