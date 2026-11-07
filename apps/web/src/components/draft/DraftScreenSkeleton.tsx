@@ -11,10 +11,9 @@ export function DraftScreenSkeleton() {
       </div>
       <div className="grid min-h-0 flex-1 grid-cols-2 gap-3 px-3 pb-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)_minmax(0,1fr)] lg:grid-rows-[auto_minmax(0,1fr)]">
         <BansSkeleton className="lg:col-start-1 lg:row-start-1" />
-        <Skeleton className="col-span-2 h-10 lg:col-span-1 lg:col-start-2 lg:row-start-1" />
         <BansSkeleton className="lg:col-start-3 lg:row-start-1" />
         <PicksSkeleton className="lg:col-start-1 lg:row-start-2" />
-        <div className="col-span-2 bg-card p-3 lg:col-span-1 lg:col-start-2 lg:row-start-2">
+        <div className="col-span-2 bg-card p-3 lg:col-span-1 lg:col-start-2 lg:row-span-2 lg:row-start-1">
           <ChampionGridSkeleton />
         </div>
         <PicksSkeleton className="lg:col-start-3 lg:row-start-2" />
