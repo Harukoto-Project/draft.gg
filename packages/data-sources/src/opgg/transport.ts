@@ -10,8 +10,8 @@ const REQUEST_TIMEOUT_MS = 30_000;
  * OP.GG の公式 MCP(Streamable HTTP)に接続する。
  * 呼び出し間隔と同時実行は、このクライアントの利用者(ジョブ)が制御する。
  */
-export async function connectOpggTransport(): Promise<OpggTransport> {
-  const client = new Client({ name: "draftgg-worker", version: "0.0.0" });
+export async function connectOpggTransport(clientName = "draftgg-worker"): Promise<OpggTransport> {
+  const client = new Client({ name: clientName, version: "0.0.0" });
   const transport = new StreamableHTTPClientTransport(new URL(ENDPOINT));
   await client.connect(transport);
 

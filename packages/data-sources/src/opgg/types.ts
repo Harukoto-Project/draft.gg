@@ -30,6 +30,14 @@ export interface ChampionAnalysis {
   }>;
 }
 
+/** プレイヤーのよく使うチャンピオン。ロールは OP.GG から取れない */
+export interface SummonerPoolEntry {
+  /** Data Dragon の `key`(数値) */
+  numericKey: number;
+  games: number;
+  winRate: number;
+}
+
 export interface OpggTransport {
   callTool(name: string, args: Record<string, unknown>): Promise<unknown>;
   close(): Promise<void>;
@@ -38,8 +46,13 @@ export interface OpggTransport {
 export interface OpggClient {
   listLaneMeta(catalog: ChampionRef[]): Promise<LaneMetaRow[]>;
   analyzeChampion(
-    catalog: import("@draftgg/shared").ChampionRef[],
+    catalog: ChampionRef[],
     target: { championId: string; nameEn: string; position: Position; numericKey: number },
   ): Promise<ChampionAnalysis>;
+  getSummonerPool(riotId: {
+    gameName: string;
+    tagLine: string;
+    region: string;
+  }): Promise<SummonerPoolEntry[]>;
   close(): Promise<void>;
 }

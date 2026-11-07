@@ -2,6 +2,7 @@ import { POSITIONS } from "@draftgg/shared";
 
 import { toOpggChampionKey } from "./names.js";
 import { extractToolJson, parseChampionAnalysis, parseLaneMeta } from "./parse.js";
+import { parseSummonerPool } from "./summoner.js";
 import type { OpggClient, OpggTransport } from "./types.js";
 
 const LANE_META_FIELDS = POSITIONS.map(
@@ -18,6 +19,10 @@ const ANALYSIS_FIELDS = [
   "data.strong_counters[].{champion_id,my_win_rate,play}",
   "data.weak_counters[].{champion_id,my_win_rate,play}",
   "data.synergies",
+];
+
+const SUMMONER_FIELDS = [
+  "data.summoner.ranked_most_champions.my_champion_stats[].{id,play,win,lose}",
 ];
 
 export function createOpggClient(transport: OpggTransport): OpggClient {
@@ -41,6 +46,17 @@ export function createOpggClient(transport: OpggTransport): OpggClient {
         desired_output_fields: ANALYSIS_FIELDS,
       });
       return parseChampionAnalysis(extractToolJson(result), catalog, target);
+    },
+
+    async getSummonerPool(riotId) {
+      const result = await transport.callTool("lol_get_summoner_profile", {
+        game_name: riotId.gameName,
+        tag_line: riotId.tagLine,
+        region: riotId.region,
+        lang: "en_US",
+        desired_output_fields: SUMMONER_FIELDS,
+      });
+      return parseSummonerPool(extractToolJson(result));
     },
 
     close: () => transport.close(),
