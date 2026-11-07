@@ -15,13 +15,14 @@ export interface ProLeaguepediaDeps {
   credentials: LeaguepediaCredentials | null;
   listChampions: () => Promise<ChampionRef[]>;
   listGames: () => Promise<ProGameDraft[]>;
-  fetchDrafts: (since: string, signal?: AbortSignal) => Promise<LeaguepediaDraft[]>;
+  fetchDrafts: (dates: string[], signal?: AbortSignal) => Promise<LeaguepediaDraft[]>;
   fillOrders: (fills: ProOrderFill[]) => Promise<number>;
 }
 
 /**
  * Oracle's Elixir のあとに、ピックと BAN の順番が空の試合だけを補完する。
- * 認証情報が無いときはスキップする。スケジュールは持たず、pro-oracles から起動する。
+ * 認証情報が無いとき、空いている手が無いときはスキップする。
+ * スケジュールは持たず、pro-oracles から起動する。
  */
 export function createProLeaguepediaJob(deps: ProLeaguepediaDeps): Job {
   return {
@@ -32,12 +33,14 @@ export function createProLeaguepediaJob(deps: ProLeaguepediaDeps): Job {
       if (!deps.credentials) return { skipped: true };
       const games = await deps.listGames();
       if (games.length === 0) return { skipped: true, reason: "no games" };
-      const since = earliestSince(games);
-      const drafts = await deps.fetchDrafts(since, signal);
+      const pending = games.filter((game) => game.actions.some((action) => action.order === null));
+      if (pending.length === 0) return { skipped: true, reason: "orders filled" };
+      const dates = [...new Set(pending.map((game) => proMatchDate(game.playedAt)))].sort();
+      const drafts = await deps.fetchDrafts(dates, signal);
       if (signal?.aborted) throw new Error("中断されました");
       const champions = await deps.listChampions();
       const resolve = createChampionResolver(champions);
-      const matched = matchLeaguepediaDrafts(games, drafts, resolve);
+      const matched = matchLeaguepediaDrafts(pending, drafts, resolve);
       const updated = await deps.fillOrders(matched.fills);
       return {
         drafts: drafts.length,
@@ -47,10 +50,4 @@ export function createProLeaguepediaJob(deps: ProLeaguepediaDeps): Job {
       };
     },
   };
-}
-
-function earliestSince(games: ProGameDraft[]): string {
-  const earliest = games.map((game) => proMatchDate(game.playedAt)).sort()[0];
-  if (!earliest) throw new Error("プロ試合がありません");
-  return `${earliest} 00:00:00`;
 }

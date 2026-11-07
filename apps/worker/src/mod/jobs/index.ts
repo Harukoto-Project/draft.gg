@@ -76,10 +76,10 @@ export function createJobs(db: Database, hooks: JobHooks = {}): Job[] {
       credentials: hooks.leaguepedia ?? null,
       listChampions: champions,
       listGames: () => listStoredProGames(db),
-      fetchDrafts: (since, signal) => {
+      fetchDrafts: (dates, signal) => {
         const credentials = hooks.leaguepedia;
         if (!credentials) return Promise.resolve([]);
-        return createLeaguepediaClient({ credentials }).fetchDrafts(since, signal);
+        return createLeaguepediaClient({ credentials }).fetchDrafts(dates, signal);
       },
       fillOrders: (fills) => fillProOrders(db, fills),
     }),

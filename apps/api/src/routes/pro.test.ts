@@ -34,6 +34,19 @@ describe("GET /pro/champions", () => {
     expect(body.stats[0]?.nameJa).toBe("アーリ");
   });
 
+  it("0埋めのパッチは保存時の表記にそろえる", async () => {
+    const load = vi.fn<ProReader["load"]>(async () => ({
+      scope: "patch:16.1",
+      patches: ["16.1"],
+      stats: [],
+    }));
+    const app = new Hono().route("/pro", createProRoute({ load }));
+    const response = await app.request("/pro/champions?patch=16.01");
+
+    expect(response.status).toBe(200);
+    expect(load).toHaveBeenCalledWith({ patch: "16.1" });
+  });
+
   it("リーグ名が対象外なら400を返す", async () => {
     const app = new Hono().route(
       "/pro",
@@ -45,5 +58,13 @@ describe("GET /pro/champions", () => {
     );
     const response = await app.request("/pro/champions?league=LCS");
     expect(response.status).toBe(400);
+  });
+
+  it("解釈できないパッチは400を返す", async () => {
+    const load = vi.fn<ProReader["load"]>();
+    const app = new Hono().route("/pro", createProRoute({ load }));
+    const response = await app.request("/pro/champions?patch=16.01a");
+    expect(response.status).toBe(400);
+    expect(load).not.toHaveBeenCalled();
   });
 });

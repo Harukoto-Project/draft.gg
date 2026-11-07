@@ -215,4 +215,12 @@ describe("selectOraclesFile", () => {
       name: "2026_LoL_esports_match_data_from_OraclesElixir.csv",
     });
   });
+
+  it("前のエントリのidを、別ファイルの当年CSVに結ばない", () => {
+    const html = `
+      <div id="entry-notes" class="flip-entry"><div class="flip-entry-title">readme.txt</div></div>
+      <div id="entry-csv" class="flip-entry"><div class="flip-entry-title">2026_LoL_esports_match_data_from_OraclesElixir.csv</div></div>
+    `;
+    expect(selectOraclesFile(html)?.id).toBe("csv");
+  });
 });

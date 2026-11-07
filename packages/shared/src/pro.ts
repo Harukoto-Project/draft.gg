@@ -116,7 +116,14 @@ export function proMatchDate(playedAt: Date): string {
   return playedAt.toISOString().slice(0, 10);
 }
 
-const patchQuery = z.string().regex(/^\d+\.\d+$/);
+const patchQuery = z
+  .string()
+  .regex(/^\d+\.\d+$/)
+  .transform((value) => {
+    const normalized = normalizePatch(value);
+    if (!normalized) return value;
+    return normalized;
+  });
 
 export const proChampionsQuerySchema = z.object({
   league: z.enum(PRO_LEAGUES).optional(),

@@ -29,6 +29,9 @@ const API = "https://lol.fandom.com/api.php";
 const PAGE_SIZE = 500;
 const MAX_PAGES = 40;
 const PAGE_INTERVAL_MS = 3_000;
+const REQUEST_TIMEOUT_MS = 60_000;
+/** 日付をまとめすぎると、1回が上限まで埋まって失敗する */
+const DATE_BATCH = 15;
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -36,6 +39,12 @@ export interface LeaguepediaClientOptions {
   credentials: LeaguepediaCredentials;
   fetch?: FetchLike;
   sleep?: (ms: number, signal: AbortSignal) => Promise<void>;
+  /** テスト用。本番は 500 */
+  pageSize?: number;
+  /** テスト用。本番は 40 */
+  maxPages?: number;
+  /** テスト用。本番は 60 秒 */
+  timeoutMs?: number;
 }
 
 /**
@@ -46,12 +55,16 @@ export interface LeaguepediaClientOptions {
 export function createLeaguepediaClient(options: LeaguepediaClientOptions) {
   const doFetch: FetchLike = options.fetch ?? ((input, init) => fetch(input, init));
   const sleep = options.sleep ?? abortableSleep;
+  const pageSize = options.pageSize ?? PAGE_SIZE;
+  const maxPages = options.maxPages ?? MAX_PAGES;
+  const timeoutMs = options.timeoutMs ?? REQUEST_TIMEOUT_MS;
   const jar = new Map<string, string>();
+  const headers = () => requestHeaders(jar, options.credentials.username);
 
   async function call(params: URLSearchParams, signal?: AbortSignal): Promise<unknown> {
     const response = await doFetch(`${API}?${params}`, {
-      signal,
-      headers: cookieHeader(jar),
+      signal: requestSignal(signal, timeoutMs),
+      headers: headers(),
     });
     storeCookies(jar, response);
     if (!response.ok) {
@@ -68,8 +81,11 @@ export function createLeaguepediaClient(options: LeaguepediaClientOptions) {
   async function post(params: URLSearchParams, signal?: AbortSignal): Promise<unknown> {
     const response = await doFetch(API, {
       method: "POST",
-      signal,
-      headers: { "content-type": "application/x-www-form-urlencoded", ...cookieHeader(jar) },
+      signal: requestSignal(signal, timeoutMs),
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+        ...headers(),
+      },
       body: params,
     });
     storeCookies(jar, response);
@@ -79,21 +95,32 @@ export function createLeaguepediaClient(options: LeaguepediaClientOptions) {
   }
 
   return {
-    async fetchDrafts(since: string, signal?: AbortSignal): Promise<LeaguepediaDraft[]> {
-      if (!/^\d{4}-\d{2}-\d{2} 00:00:00$/.test(since)) {
-        throw new Error("Leaguepedia の取得開始日が不正です");
-      }
+    /**
+     * 順番が空の試合の日付だけを、新しい順に取る。
+     * ScoreboardGames にリーグ列は無く、リーグキーも別名なので、日付で絞る。
+     * ページ上限まで埋まっていたら、続きを取りこぼしたまま成功にしない。
+     */
+    async fetchDrafts(dates: string[], signal?: AbortSignal): Promise<LeaguepediaDraft[]> {
+      const days = normalizeDates(dates);
+      if (days.length === 0) return [];
       await login(call, post, options.credentials, signal);
       const drafts: LeaguepediaDraft[] = [];
-      for (let page = 0; page < MAX_PAGES; page += 1) {
-        if (signal?.aborted) throw new Error("中断されました");
-        if (page > 0)
-          await sleep(PAGE_INTERVAL_MS, signal ?? AbortSignal.timeout(PAGE_INTERVAL_MS));
-        const params = cargoParams(since, page * PAGE_SIZE);
-        const body = await call(params, signal);
-        const pageDrafts = readDrafts(body);
-        drafts.push(...pageDrafts);
-        if (pageDrafts.length < PAGE_SIZE) break;
+      let requested = false;
+      for (const batch of chunks(days, DATE_BATCH)) {
+        for (let page = 0; page < maxPages; page += 1) {
+          if (signal?.aborted) throw new Error("中断されました");
+          if (requested) {
+            await sleep(PAGE_INTERVAL_MS, signal ?? AbortSignal.timeout(PAGE_INTERVAL_MS));
+          }
+          requested = true;
+          const body = await call(cargoParams(batch, page * pageSize, pageSize), signal);
+          const rowCount = cargoRowCount(body);
+          drafts.push(...readDrafts(body));
+          if (rowCount < pageSize) break;
+          if (page === maxPages - 1) {
+            throw new Error("Leaguepedia の取得件数が上限に達したため、順番の補完を中止しました");
+          }
+        }
       }
       return drafts;
     },
@@ -113,7 +140,7 @@ export function leaguepediaOrders(draft: LeaguepediaDraft): LeaguepediaOrder[] {
   );
 }
 
-function cargoParams(since: string, offset: number): URLSearchParams {
+function cargoParams(dates: string[], offset: number, limit: number): URLSearchParams {
   const fields = [
     "ScoreboardGames.DateTime_UTC=playedAt",
     "ScoreboardGames.N_GameInMatch=gameNumber",
@@ -128,10 +155,63 @@ function cargoParams(since: string, offset: number): URLSearchParams {
     tables: "PicksAndBansS7,ScoreboardGames",
     join_on: "PicksAndBansS7.GameId=ScoreboardGames.GameId",
     fields,
-    where: `ScoreboardGames.DateTime_UTC >= "${since}"`,
-    limit: String(PAGE_SIZE),
+    where: dates.map(dayClause).join(" OR "),
+    order_by: "ScoreboardGames.DateTime_UTC DESC",
+    limit: String(limit),
     offset: String(offset),
   });
+}
+
+function dayClause(date: string): string {
+  return `(ScoreboardGames.DateTime_UTC >= "${date} 00:00:00" AND ScoreboardGames.DateTime_UTC < "${nextUtcDate(date)} 00:00:00")`;
+}
+
+function normalizeDates(dates: string[]): string[] {
+  const unique = [...new Set(dates)].sort();
+  for (const date of unique) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      throw new Error("Leaguepedia の取得日が不正です");
+    }
+  }
+  return unique;
+}
+
+function nextUtcDate(isoDate: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+  if (!match) throw new Error("Leaguepedia の取得日が不正です");
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  return new Date(Date.UTC(year, month - 1, day + 1)).toISOString().slice(0, 10);
+}
+
+function cargoRowCount(body: unknown): number {
+  if (!isRecord(body) || !Array.isArray(body.cargoquery)) return 0;
+  return body.cargoquery.length;
+}
+
+function requestHeaders(
+  jar: Map<string, string>,
+  username: string,
+): { "user-agent": string; cookie?: string } {
+  return {
+    "user-agent": `draft.gg (${username.replace(/[\r\n]/g, "")})`,
+    ...cookieHeader(jar),
+  };
+}
+
+function requestSignal(signal: AbortSignal | undefined, timeoutMs: number): AbortSignal {
+  const timeout = AbortSignal.timeout(timeoutMs);
+  if (!signal) return timeout;
+  return AbortSignal.any([signal, timeout]);
+}
+
+function chunks<T>(items: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    result.push(items.slice(index, index + size));
+  }
+  return result;
 }
 
 function namedFields(kind: "Pick" | "Ban"): string[] {

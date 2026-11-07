@@ -28,13 +28,15 @@ export interface OraclesClientOptions {
 }
 
 export function selectOraclesFile(html: string): OraclesFile | null {
-  const pattern =
-    /id="entry-([A-Za-z0-9_-]+)"[\s\S]*?class="flip-entry-title">((\d{4})_LoL_esports_match_data_from_OraclesElixir\.csv)/g;
   let best: OraclesFile | null = null;
-  for (const match of html.matchAll(pattern)) {
-    const id = match[1];
-    const name = match[2];
-    const year = Number(match[3]);
+  for (const entry of html.split(/id="entry-/).slice(1)) {
+    const id = /^([A-Za-z0-9_-]+)"/.exec(entry)?.[1];
+    const title =
+      /class="flip-entry-title">((\d{4})_LoL_esports_match_data_from_OraclesElixir\.csv)/.exec(
+        entry,
+      );
+    const name = title?.[1];
+    const year = Number(title?.[2]);
     if (!id || !name || !FILE_NAME.test(name)) continue;
     if (!best || year > best.year) best = { id, year, name };
   }

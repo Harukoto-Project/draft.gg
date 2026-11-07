@@ -333,6 +333,22 @@ export async function resolveStatsPatch(db: Database, tier: RankTier): Promise<s
   return pickStatsPatch(rows.map((row) => ({ patch: row.patch, rows: Number(row.rows) })));
 }
 
+/**
+ * プロ統計が読めないとき(テーブル未作成や率の変換失敗)は空にする。
+ * メタ側の失敗はここを通さず、スナップショットごと失敗させる。
+ */
+export async function loadProStatsForSnapshot(
+  load: () => Promise<StatsSnapshot["pro"]>,
+  onError: (error: unknown) => void,
+): Promise<StatsSnapshot["pro"]> {
+  try {
+    return await load();
+  } catch (error) {
+    onError(error);
+    return [];
+  }
+}
+
 /** 提案・メタ API が読む統計。現在パッチの統計が空のあいだは、直前のパッチの統計を返す。 */
 export async function loadStatsSnapshot(db: Database, tier: RankTier): Promise<StatsSnapshot> {
   const patch = await resolveStatsPatch(db, tier);
@@ -354,7 +370,12 @@ export async function loadStatsSnapshot(db: Database, tier: RankTier): Promise<S
       .select()
       .from(synergies)
       .where(and(eq(synergies.patch, patch), eq(synergies.tier, tier))),
-    loadMajorProStats(db),
+    loadProStatsForSnapshot(
+      () => loadMajorProStats(db),
+      (error) => {
+        console.error("プロ統計の読み込みに失敗したため、提案ではプロを外します", error);
+      },
+    ),
   ]);
 
   const championList: ChampionRef[] = championRows.map((row) => ({

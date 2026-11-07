@@ -68,10 +68,14 @@ export function buildProGameUpsert(db: Writer, games: ProGameDraft[]) {
     });
 }
 
-/** 同じ game_key は上書きし、その試合のピックと BAN は入れ替える */
+/**
+ * 同じ game_key は上書きし、その試合のピックと BAN は入れ替える。
+ * 全部書けてから確定する。途中で失敗した実行は、書いた試合も戻す。
+ */
 export async function saveProGames(db: Database, games: ProGameDraft[]): Promise<void> {
-  for (const chunk of chunks(games, GAME_CHUNK)) {
-    await db.transaction(async (tx) => {
+  if (games.length === 0) return;
+  await db.transaction(async (tx) => {
+    for (const chunk of chunks(games, GAME_CHUNK)) {
       await buildProGameUpsert(tx, chunk);
       const ids = await tx
         .select({ id: proGames.id, gameKey: proGames.gameKey })
@@ -102,13 +106,13 @@ export async function saveProGames(db: Database, games: ProGameDraft[]): Promise
       for (const actionChunk of chunks(actions, INSERT_CHUNK)) {
         await tx.insert(proGameActions).values(actionChunk);
       }
-    });
-  }
+    }
+  });
 }
 
 /**
- * 順番が空の手だけ埋める。Leaguepedia で突き合った試合は sources.leaguepedia を true にする。
- * 埋めた試合数を返す。
+ * 順番が空の手だけ埋める。実際に埋まった試合だけ sources.leaguepedia を true にする。
+ * 埋めた試合数を返す。順番が既にある試合は更新しない。
  */
 export async function fillProOrders(db: Database, fills: ProOrderFill[]): Promise<number> {
   if (fills.length === 0) return 0;
@@ -125,11 +129,26 @@ export async function fillProOrders(db: Database, fills: ProOrderFill[]): Promis
           ),
         );
       const idByKey = new Map(ids.map((row) => [row.gameKey, row.id]));
+      const gameIds = [...idByKey.values()];
+      if (gameIds.length === 0) continue;
+      const pending = await tx
+        .select({
+          gameId: proGameActions.gameId,
+          championId: proGameActions.championId,
+          type: proGameActions.type,
+        })
+        .from(proGameActions)
+        .where(and(inArray(proGameActions.gameId, gameIds), isNull(proGameActions.order)));
+      const pendingKeys = new Set(
+        pending.map((row) => actionKey(row.gameId, row.championId, row.type)),
+      );
+      const filledGames = new Set<number>();
       for (const fill of chunk) {
         const gameId = idByKey.get(fill.gameKey);
-        if (gameId === undefined || fill.orders.length === 0) continue;
+        if (gameId === undefined) continue;
         for (const order of fill.orders) {
-          await tx
+          if (!pendingKeys.has(actionKey(gameId, order.championId, order.type))) continue;
+          const result = await tx
             .update(proGameActions)
             .set({ order: order.order })
             .where(
@@ -140,13 +159,15 @@ export async function fillProOrders(db: Database, fills: ProOrderFill[]): Promis
                 isNull(proGameActions.order),
               ),
             );
+          if (affectedRows(result) > 0) filledGames.add(gameId);
         }
-        await tx
-          .update(proGames)
-          .set({ sources: { oraclesElixir: true, leaguepedia: true } })
-          .where(eq(proGames.id, gameId));
-        updated += 1;
       }
+      if (filledGames.size === 0) continue;
+      await tx
+        .update(proGames)
+        .set({ sources: { oraclesElixir: true, leaguepedia: true } })
+        .where(inArray(proGames.id, [...filledGames]));
+      updated += filledGames.size;
     }
   });
   return updated;
@@ -272,6 +293,19 @@ export async function loadMajorProStats(db: Database) {
     winRate: asNullableNumber(row.winRate),
     earlyPickRate: asNullableNumber(row.earlyPickRate),
   }));
+}
+
+function actionKey(gameId: number, championId: string, type: string): string {
+  return `${gameId}\u0000${type}\u0000${championId}`;
+}
+
+function affectedRows(result: unknown): number {
+  const header = Array.isArray(result) ? result[0] : result;
+  if (typeof header === "object" && header !== null && "affectedRows" in header) {
+    const rows = header.affectedRows;
+    return typeof rows === "number" ? rows : 0;
+  }
+  return 0;
 }
 
 function asNumber(value: string | number): number {
