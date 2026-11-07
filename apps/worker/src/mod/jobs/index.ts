@@ -38,6 +38,8 @@ export interface JobHooks {
   leaguepedia?: LeaguepediaCredentials | null;
   /** 設定されていれば、公開フォルダの代わりにこの CSV を取る */
   oraclesFileUrl?: string;
+  /** 設定されていれば、ネットワークを使わずにこのローカルの CSV を読む(oraclesFileUrl より優先) */
+  oraclesFilePath?: string;
 }
 
 /** 常駐スケジューラに登録するジョブ。1ジョブ = 1ファイルで追加し、ここに並べる。 */
@@ -68,7 +70,10 @@ export function createJobs(db: Database, hooks: JobHooks = {}): Job[] {
     createProOraclesJob({
       listChampions: champions,
       fetchGames: (catalog, signal) =>
-        createOraclesElixirClient({ fileUrl: hooks.oraclesFileUrl }).fetchGames(catalog, signal),
+        createOraclesElixirClient({
+          fileUrl: hooks.oraclesFileUrl,
+          filePath: hooks.oraclesFilePath,
+        }).fetchGames(catalog, signal),
       save: (games) => saveProGames(db, games),
       onImported: hooks.onProImported,
     }),
