@@ -398,4 +398,52 @@ describe("recommend", () => {
     const ahri = result.bans.find((candidate) => candidate.championId === "Ahri");
     expect(ahri?.reasons).toContain("プロ プレゼンス55.0%(ピック15・BAN40 / 100試合)");
   });
+
+  it("プールが渡されたロールは、プールの習熟度でピック候補を並べ替える", () => {
+    const input = createInput({
+      meta: [metaRow("Ahri", "mid"), metaRow("Veigar", "mid"), metaRow("Zed", "mid")],
+    });
+    const result = recommend({
+      ...input,
+      pools: {
+        mid: [
+          { championId: "Veigar", games: 60, winRate: 0.6 },
+          { championId: "Zed", games: null, winRate: null },
+        ],
+      },
+    });
+
+    const candidates = result.picks[0]?.candidates ?? [];
+    expect(candidates.map((candidate) => candidate.championId)).toEqual(["Veigar", "Zed", "Ahri"]);
+    expect(candidates[0]?.factors.pool).toBe(1);
+    expect(candidates[0]?.reasons).toContain("プール 勝率60.0%(60試合)");
+    expect(candidates[1]?.factors.pool).toBe(0.6);
+    expect(candidates[1]?.reasons).toContain("プールに登録済み");
+    expect(candidates[2]?.factors.pool).toBe(0);
+    expect(candidates[2]?.reasons).toContain("プール外");
+  });
+
+  it("プールが無い・空のロールでは、プールの要素を計算しない", () => {
+    const input = createInput({ meta: [metaRow("Ahri", "mid")] });
+
+    for (const pools of [
+      undefined,
+      {},
+      { mid: [] },
+      { top: [{ championId: "Ahri", games: 1, winRate: 1 }] },
+    ]) {
+      const candidate = recommend({ ...input, pools }).picks[0]?.candidates[0];
+      expect(candidate?.factors.pool).toBeUndefined();
+    }
+  });
+
+  it("試合数が少ないプールは習熟度が低い", () => {
+    const input = createInput({ meta: [metaRow("Ahri", "mid")] });
+    const result = recommend({
+      ...input,
+      pools: { mid: [{ championId: "Ahri", games: 3, winRate: 0.5 }] },
+    });
+    // 習熟度 3/30 = 0.1 を 0.5、勝率(ベイズ平均 0.5 → 0.5)を 0.5 で重み付け
+    expect(result.picks[0]?.candidates[0]?.factors.pool).toBe(0.3);
+  });
 });

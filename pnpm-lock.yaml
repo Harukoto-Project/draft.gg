@@ -184,6 +184,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@draftgg/data-sources':
+        specifier: workspace:*
+        version: link:../../packages/data-sources
       '@draftgg/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -202,6 +205,9 @@ importers:
       hono:
         specifier: ^4.13.16
         version: 4.13.16
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
     devDependencies:
       tsx:
         specifier: ^4.23.15
@@ -310,7 +316,7 @@ importers:
         version: link:../shared
       drizzle-orm:
         specifier: ^0.45.4
-        version: 0.45.4(mysql2@3.24.6(@types/node@26.6.6))
+        version: 0.45.4(kysely@0.29.8)(mysql2@3.24.6(@types/node@26.6.6))
       mysql2:
         specifier: ^3.24.6
         version: 3.24.6(@types/node@26.6.6)
@@ -6489,11 +6495,6 @@ snapshots:
   drizzle-orm@0.45.4(kysely@0.29.8)(mysql2@3.24.6(@types/node@26.6.6)):
     optionalDependencies:
       kysely: 0.29.8
-      mysql2: 3.24.6(@types/node@26.6.6)
-    optional: true
-
-  drizzle-orm@0.45.4(mysql2@3.24.6(@types/node@26.6.6)):
-    optionalDependencies:
       mysql2: 3.24.6(@types/node@26.6.6)
 
   dunder-proto@1.0.1:

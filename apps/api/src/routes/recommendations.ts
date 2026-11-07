@@ -15,8 +15,8 @@ export interface RecommendationSource {
   getSnapshot(): StatsSnapshot;
 }
 
-/** 20 手のドラフトと重みで 4KB 程度。余裕を見て 16KB までにする */
-export const MAX_RECOMMENDATION_BODY_BYTES = 16 * 1024;
+/** 20 手のドラフトと重みで 4KB 程度。プールは 5 ロール × 100 件 × 70 バイト程度で 35KB。余裕を見て 64KB までにする */
+export const MAX_RECOMMENDATION_BODY_BYTES = 64 * 1024;
 
 export function createRecommendationsRoute(source: RecommendationSource) {
   const limit = bodyLimit({
@@ -46,6 +46,7 @@ export function createRecommendationsRoute(source: RecommendationSource) {
         limit: request.limit ?? DEFAULT_RECOMMENDATION_LIMIT,
         pickWeights: { ...PICK_WEIGHT_PRESETS[preset], ...request.weights?.pick },
         banWeights: { ...BAN_WEIGHT_PRESETS[preset], ...request.weights?.ban },
+        pools: request.pools,
       }),
     );
     return c.json(body);

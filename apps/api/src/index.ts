@@ -1,6 +1,7 @@
 import { serve } from "@hono/node-server";
 import {
   createDatabase,
+  createProfileStore,
   getCurrentPatch,
   listChampions,
   loadProChampions,
@@ -11,6 +12,7 @@ import { Hono } from "hono";
 
 import { createAuthGateway } from "./mod/auth/index.js";
 import { loadConfig } from "./mod/config/index.js";
+import { createPoolSync } from "./mod/pool-sync/index.js";
 import { createStatsCache } from "./mod/stats-cache/index.js";
 import { createRoutes } from "./routes/index.js";
 
@@ -24,6 +26,7 @@ const app = new Hono().route(
   "/api",
   createRoutes({
     auth: config.auth ? createAuthGateway(db, config.auth) : null,
+    allowedOrigin: config.auth?.baseUrl ?? null,
     champions: {
       getCurrentPatch: () => getCurrentPatch(db),
       listChampions: () => listChampions(db),
@@ -31,6 +34,10 @@ const app = new Hono().route(
     meta: stats,
     recommendations: stats,
     pro: { load: (query) => loadProChampions(db, query) },
+    profiles: {
+      store: createProfileStore(db),
+      sync: createPoolSync({ getSnapshot: () => stats.getSnapshot() }),
+    },
   }),
 );
 

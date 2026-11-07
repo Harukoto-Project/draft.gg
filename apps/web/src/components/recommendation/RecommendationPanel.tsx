@@ -2,17 +2,21 @@
 
 import { POSITION_LABELS } from "@draftgg/shared";
 import type { Champion, RecommendationCandidate, RecommendationResponse } from "@draftgg/shared";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { CandidateCard } from "@/components/recommendation/CandidateCard";
 import { MyRolePicker } from "@/components/recommendation/MyRolePicker";
+import { PlayerPicker } from "@/components/recommendation/PlayerPicker";
 import { RoleIcon } from "@/components/role/RoleIcon";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useDraft } from "@/hooks/use-draft";
+import { useMe } from "@/hooks/use-me";
+import { useProfiles } from "@/hooks/use-profiles";
 import { useRecommendations } from "@/hooks/use-recommendations";
 import { formatMessage } from "@/lib/formatMessage";
+import { buildPoolHints } from "@/lib/poolHints";
 import ja from "@/messages/ja.json";
 
 type View = "pick" | "ban";
@@ -28,13 +32,30 @@ export function RecommendationPanel({
   onPick: (championId: string) => void;
 }) {
   const { state, ready, chooseMyPosition } = useDraft();
-  const query = useRecommendations(state, ready);
+  const me = useMe();
+  const profiles = useProfiles(Boolean(me.data?.user));
+  const [playerId, setPlayerId] = useState<string | null>(null);
+  const player = profiles.data?.find((profile) => profile.id === playerId);
+  const pools = useMemo(
+    () => buildPoolHints(player, state.me?.position ?? null),
+    [player, state.me?.position],
+  );
+  const query = useRecommendations(state, ready, pools);
   const [view, setView] = useState<View>("pick");
+  // プールはソロ(自分のロールを選んだとき)だけ使う
+  const showPlayerPicker = state.me !== null && (profiles.data?.length ?? 0) > 0;
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <MyRolePicker value={state.me?.position ?? null} onChange={chooseMyPosition} />
+        {showPlayerPicker ? (
+          <PlayerPicker
+            profiles={profiles.data ?? []}
+            value={player?.id ?? null}
+            onChange={setPlayerId}
+          />
+        ) : null}
         <ToggleGroup
           type="single"
           size="sm"

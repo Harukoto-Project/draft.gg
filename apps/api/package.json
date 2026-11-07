@@ -11,12 +11,14 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@draftgg/data-sources": "workspace:*",
     "@draftgg/db": "workspace:*",
     "@draftgg/engine": "workspace:*",
     "@draftgg/shared": "workspace:*",
     "@hono/node-server": "^2.1.6",
     "better-auth": "^1.7.18",
-    "hono": "^4.13.16"
+    "hono": "^4.13.16",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "tsx": "^4.23.15",

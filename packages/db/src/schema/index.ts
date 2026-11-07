@@ -4,6 +4,7 @@ export * from "./job-runs.js";
 export * from "./matchups.js";
 export * from "./meta-stats.js";
 export * from "./patches.js";
+export * from "./profiles.js";
 export * from "./pro-champion-stats.js";
 export * from "./pro-game-actions.js";
 export * from "./pro-games.js";

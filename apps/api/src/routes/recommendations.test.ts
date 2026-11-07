@@ -1,4 +1,9 @@
-import { ID_MAX_LENGTH, MAX_DRAFT_ACTIONS, recommendationResponseSchema } from "@draftgg/shared";
+import {
+  ID_MAX_LENGTH,
+  MAX_DRAFT_ACTIONS,
+  MAX_POOL_ENTRIES,
+  recommendationResponseSchema,
+} from "@draftgg/shared";
 import { Hono } from "hono";
 import { describe, expect, it } from "vitest";
 
@@ -104,6 +109,33 @@ describe("POST /recommendations", () => {
     });
 
     expect(response.status).toBe(400);
+  });
+
+  it("プールを渡すと、そのロールの候補にプールの要素が付く", async () => {
+    const response = await post({
+      draft,
+      pools: { mid: [{ championId: "Veigar", games: 60, winRate: 0.6 }] },
+    });
+    const body = recommendationResponseSchema.parse(await response.json());
+
+    expect(response.status).toBe(200);
+    const candidates = body.picks[0]?.candidates ?? [];
+    expect(candidates.find((candidate) => candidate.championId === "Veigar")?.factors.pool).toBe(1);
+    expect(candidates.find((candidate) => candidate.championId === "Ahri")?.factors.pool).toBe(0);
+  });
+
+  it("プールの形が違う(件数超過・勝率が範囲外)ときは 400 を返す", async () => {
+    const tooMany = Array.from({ length: MAX_POOL_ENTRIES + 1 }, () => ({
+      championId: "Ahri",
+      games: 1,
+      winRate: 0.5,
+    }));
+
+    expect((await post({ draft, pools: { mid: tooMany } })).status).toBe(400);
+    expect(
+      (await post({ draft, pools: { mid: [{ championId: "Ahri", games: 1, winRate: 2 }] } }))
+        .status,
+    ).toBe(400);
   });
 
   it("ボディが大きすぎるときは 413 を返す", async () => {
