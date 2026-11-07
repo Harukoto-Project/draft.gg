@@ -1,4 +1,5 @@
 import {
+  actionsMatchRules,
   savedDraftInputSchema,
   savedDraftSchema,
   savedDraftsResponseSchema,
@@ -42,7 +43,10 @@ export function createDraftsRoute(deps: DraftsDeps) {
 
     .post("/", limit, async (c) => {
       const parsed = savedDraftInputSchema.safeParse(await c.req.json().catch(() => null));
-      if (!parsed.success) return c.json({ error: "invalid_request" }, 400);
+      // 形だけでなく、進行ルールと手順が一致する状態だけを保存する
+      if (!parsed.success || !actionsMatchRules(parsed.data.state)) {
+        return c.json({ error: "invalid_request" }, 400);
+      }
       const created = await deps.store.create(c.get("user").id, parsed.data);
       if (created === "limit") return c.json({ error: "draft_limit" }, 409);
       return c.json(savedDraftSchema.parse(created), 201);
