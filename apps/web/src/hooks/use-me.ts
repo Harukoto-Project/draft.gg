@@ -24,8 +24,10 @@ export function useSignOut() {
   return useMutation({
     mutationFn: signOut,
     onSuccess: async () => {
-      // ログイン中のデータ(プール・チーム・保存したドラフト)をまとめて捨てる
-      await queryClient.invalidateQueries();
+      // ログイン中のデータ(プール・チーム・保存したドラフト)をキャッシュごと捨てる。
+      // invalidateQueries は無効(enabled: false)なクエリを取り直さず、前のユーザーのデータが残るため
+      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== ME_KEY[0] });
+      await queryClient.invalidateQueries({ queryKey: ME_KEY });
     },
   });
 }

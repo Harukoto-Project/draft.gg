@@ -1,8 +1,20 @@
 "use client";
 
+import { actionsMatchRules, draftHasChampion } from "@draftgg/shared";
 import type { SavedDraft } from "@draftgg/shared";
 import { Trash2 } from "lucide-react";
+import { useState } from "react";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,7 +50,7 @@ function countActions(draft: SavedDraft) {
   return { bans, picks };
 }
 
-/** 保存したドラフトの一覧。読み込むと、いまのドラフトを置き換える */
+/** 保存したドラフトの一覧。読み込むと、いまのドラフトを置き換える(入力済みなら確認する) */
 export function SavedDraftsDialog({
   open,
   onOpenChange,
@@ -46,7 +58,14 @@ export function SavedDraftsDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { loadDraft } = useDraft();
+  const { state, loadDraft } = useDraft();
+  const [pending, setPending] = useState<SavedDraft | null>(null);
+
+  function load(draft: SavedDraft) {
+    loadDraft(draft.state);
+    setPending(null);
+    onOpenChange(false);
+  }
   const drafts = useDrafts(open);
   const remove = useDeleteDraft();
 
@@ -84,6 +103,7 @@ export function SavedDraftsDialog({
               {drafts.data?.map((draft) => {
                 const label = DATE_FORMAT.format(new Date(draft.createdAt));
                 const { bans, picks } = countActions(draft);
+                const compatible = actionsMatchRules(draft.state);
                 return (
                   <li key={draft.id} className="flex items-center gap-2 border border-border p-2">
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -98,14 +118,17 @@ export function SavedDraftsDialog({
                           picks: String(picks),
                         })}
                       </p>
+                      {compatible ? null : (
+                        <p className="truncate text-xs text-destructive">
+                          {ja.drafts.incompatible}
+                        </p>
+                      )}
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        loadDraft(draft.state);
-                        onOpenChange(false);
-                      }}
+                      disabled={!compatible}
+                      onClick={() => (draftHasChampion(state) ? setPending(draft) : load(draft))}
                     >
                       {ja.drafts.load}
                     </Button>
@@ -136,6 +159,25 @@ export function SavedDraftsDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+      <AlertDialog open={pending !== null} onOpenChange={(next) => !next && setPending(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{ja.drafts.loadConfirmTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{ja.drafts.loadConfirmDescription}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{ja.draft.cancel}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                if (pending) load(pending);
+              }}
+            >
+              {ja.drafts.loadConfirm}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
