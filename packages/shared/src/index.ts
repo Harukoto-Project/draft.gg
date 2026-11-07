@@ -4,6 +4,7 @@ export * from "./champion-search.js";
 export * from "./draft.js";
 export * from "./draft-rules.js";
 export * from "./labels.js";
+export * from "./me.js";
 export * from "./position.js";
 export * from "./pro.js";
 export * from "./recommendation.js";

@@ -9,6 +9,7 @@ import {
 import { DEFAULT_RANK_TIER } from "@draftgg/shared";
 import { Hono } from "hono";
 
+import { createAuthGateway } from "./mod/auth/index.js";
 import { loadConfig } from "./mod/config/index.js";
 import { createStatsCache } from "./mod/stats-cache/index.js";
 import { createRoutes } from "./routes/index.js";
@@ -22,6 +23,7 @@ stats.start();
 const app = new Hono().route(
   "/api",
   createRoutes({
+    auth: config.auth ? createAuthGateway(db, config.auth) : null,
     champions: {
       getCurrentPatch: () => getCurrentPatch(db),
       listChampions: () => listChampions(db),
