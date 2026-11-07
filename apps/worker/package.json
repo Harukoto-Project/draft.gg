@@ -13,6 +13,7 @@
   "dependencies": {
     "@draftgg/data-sources": "workspace:*",
     "@draftgg/db": "workspace:*",
+    "@draftgg/shared": "workspace:*",
     "node-cron": "^4.6.0"
   },
   "devDependencies": {

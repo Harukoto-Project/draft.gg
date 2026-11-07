@@ -1,12 +1,23 @@
 import { serve } from "@hono/node-server";
-import { createDatabase, getCurrentPatch, listChampions } from "@draftgg/db";
+import {
+  createDatabase,
+  getCurrentPatch,
+  listChampions,
+  loadProChampions,
+  loadStatsSnapshot,
+} from "@draftgg/db";
+import { DEFAULT_RANK_TIER } from "@draftgg/shared";
 import { Hono } from "hono";
 
 import { loadConfig } from "./mod/config/index.js";
+import { createStatsCache } from "./mod/stats-cache/index.js";
 import { createRoutes } from "./routes/index.js";
 
 const config = loadConfig();
 const { db, close } = createDatabase(config.databaseUrl);
+const stats = createStatsCache(() => loadStatsSnapshot(db, DEFAULT_RANK_TIER));
+await stats.refresh();
+stats.start();
 
 const app = new Hono().route(
   "/api",
@@ -15,6 +26,9 @@ const app = new Hono().route(
       getCurrentPatch: () => getCurrentPatch(db),
       listChampions: () => listChampions(db),
     },
+    meta: stats,
+    recommendations: stats,
+    pro: { load: (query) => loadProChampions(db, query) },
   }),
 );
 
@@ -32,6 +46,7 @@ const server = serve({ fetch: app.fetch, hostname: config.host, port: config.por
 
 function shutdown(signal: string): void {
   console.log(JSON.stringify({ level: "info", msg: "api stopping", signal }));
+  stats.stop();
   server.close((err) => {
     void close().finally(() => process.exit(err ? 1 : 0));
   });
