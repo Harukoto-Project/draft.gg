@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+
 import type { ProGameDraft } from "@draftgg/shared";
 
 import { parseOraclesElixirCsv } from "./parse.js";
@@ -25,6 +27,9 @@ export interface OraclesClientOptions {
   fetch?: FetchLike;
   /** 設定されていれば、フォルダを見ずにこの URL の CSV を取る */
   fileUrl?: string;
+  /** 設定されていれば、ネットワークを使わずにこのローカルの CSV を読む(fileUrl より優先) */
+  filePath?: string;
+  readFile?: (path: string) => Promise<string>;
 }
 
 export function selectOraclesFile(html: string): OraclesFile | null {
@@ -56,21 +61,39 @@ export function createOraclesElixirClient(options: OraclesClientOptions = {}) {
       throw new Error(`Oracle's Elixir の取得に失敗しました (HTTP ${response.status})`);
     }
     const text = await response.text();
-    if (text.trimStart().startsWith("<")) {
-      throw new Error("Oracle's Elixir の CSV ではなく HTML が返りました");
-    }
+    if (text.trimStart().startsWith("<")) throw htmlResponseError(text);
     return text;
   }
 
   return {
     async fetchGames(champions: ChampionName[], signal?: AbortSignal): Promise<OraclesParseResult> {
-      const csv = options.fileUrl
-        ? await downloadText(options.fileUrl, DOWNLOAD_TIMEOUT_MS, signal)
-        : await downloadLatest(doFetch, signal);
+      const csv = options.filePath
+        ? await readLocal(options.filePath, options.readFile ?? defaultReadFile)
+        : options.fileUrl
+          ? await downloadText(options.fileUrl, DOWNLOAD_TIMEOUT_MS, signal)
+          : await downloadLatest(doFetch, signal);
       if (signal?.aborted) throw new Error("中断されました");
       return parseOraclesElixirCsv(csv, champions);
     },
   };
+}
+
+function defaultReadFile(path: string): Promise<string> {
+  return readFile(path, "utf8");
+}
+
+async function readLocal(path: string, read: (path: string) => Promise<string>): Promise<string> {
+  let text: string;
+  try {
+    text = await read(path);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`Oracle's Elixir の CSV を読めません(${path}): ${reason}`);
+  }
+  if (text.trimStart().startsWith("<")) {
+    throw new Error(`${path} は CSV ではなく HTML です`);
+  }
+  return text;
 }
 
 async function downloadLatest(doFetch: FetchLike, signal?: AbortSignal): Promise<string> {
@@ -86,10 +109,19 @@ async function downloadLatest(doFetch: FetchLike, signal?: AbortSignal): Promise
     throw new Error(`Oracle's Elixir の取得に失敗しました (HTTP ${response.status})`);
   }
   const text = await response.text();
-  if (text.trimStart().startsWith("<")) {
-    throw new Error("Oracle's Elixir の CSV ではなく HTML が返りました");
-  }
+  if (text.trimStart().startsWith("<")) throw htmlResponseError(text);
   return text;
+}
+
+/** Google Drive は、共有ファイルの取得が多いと上限超過の HTML を返す。見分けて、回避策を案内する */
+function htmlResponseError(html: string): Error {
+  const quota = /Quota exceeded|Too many users/i.test(html);
+  const reason = quota
+    ? "Google Drive の取得上限を超えています(しばらく待つと戻ることがあります)"
+    : "CSV ではなく HTML が返りました";
+  return new Error(
+    `Oracle's Elixir の取得に失敗しました: ${reason}。ブラウザで CSV を保存し、ローカルのファイルを指定してください(pnpm ingest pro --csv <パス>)`,
+  );
 }
 
 function combineSignal(signal: AbortSignal | undefined, timeoutMs: number): AbortSignal {

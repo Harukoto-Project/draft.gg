@@ -15,6 +15,9 @@ next-env.d.ts
 .env.*
 !.env.example
 
+# 手動で取得したデータ(Oracle's Elixir の CSV など。`pnpm ingest pro --csv data/oracles/<ファイル>`)
+data/
+
 # logs / OS
 *.log
 .DS_Store

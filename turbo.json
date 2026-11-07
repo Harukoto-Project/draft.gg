@@ -12,7 +12,8 @@
     },
     "ingest": {
       "dependsOn": ["^build"],
-      "cache": false
+      "cache": false,
+      "passThroughEnv": ["INIT_CWD"]
     },
     "typecheck": {
       "dependsOn": ["^build"]

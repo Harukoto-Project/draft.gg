@@ -24,7 +24,46 @@ describe("selectJobs", () => {
   });
 
   it("不明な名前はエラーにして、指定できる名前を示す", () => {
-    expect(() => selectJobs(jobs, ["nope"])).toThrow(/nope.*ddragon, opgg-meta, opgg-champion/);
+    expect(() => selectJobs(jobs, ["nope"])).toThrow(
+      /nope.*ddragon, opgg-meta, opgg-champion.*meta, pro, all/,
+    );
+  });
+
+  it("プロトタイプのプロパティ名は種類として扱わない", () => {
+    expect(() => selectJobs(jobs, ["constructor"])).toThrow(/不明なジョブ/);
+  });
+
+  describe("種類の指定", () => {
+    const all = [...jobs, job("pro-oracles"), job("pro-leaguepedia"), job("pro-aggregate")];
+
+    it("pro は、プロのジョブだけを依存順に返す", () => {
+      expect(selectJobs(all, ["pro"]).map((j) => j.name)).toEqual([
+        "pro-oracles",
+        "pro-leaguepedia",
+        "pro-aggregate",
+      ]);
+    });
+
+    it("meta は、メタのジョブだけを返す", () => {
+      expect(selectJobs(all, ["meta"]).map((j) => j.name)).toEqual([
+        "ddragon",
+        "opgg-meta",
+        "opgg-champion",
+      ]);
+    });
+
+    it("all はすべてを返す", () => {
+      expect(selectJobs(all, ["all"])).toBe(all);
+    });
+
+    it("種類とジョブ名を混ぜても、重複せず依存順に並べる", () => {
+      expect(selectJobs(all, ["pro-oracles", "pro", "ddragon"]).map((j) => j.name)).toEqual([
+        "ddragon",
+        "pro-oracles",
+        "pro-leaguepedia",
+        "pro-aggregate",
+      ]);
+    });
   });
 });
 
