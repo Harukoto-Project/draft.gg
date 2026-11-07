@@ -138,6 +138,14 @@ describe("POST /recommendations", () => {
     ).toBe(400);
   });
 
+  it("重みが範囲(0〜1)の外なら 400 を返す(巨大な値で合計が Infinity になるのを防ぐ)", async () => {
+    const huge = { pick: { meta: 1e308, counter: 1e308 } };
+
+    expect((await post({ draft, weights: huge })).status).toBe(400);
+    expect((await post({ draft, weights: { ban: { pro: -0.1 } } })).status).toBe(400);
+    expect((await post({ draft, weights: { pick: { meta: 1 } } })).status).toBe(200);
+  });
+
   it("ボディが大きすぎるときは 413 を返す", async () => {
     const response = await post({ draft, padding: "x".repeat(MAX_RECOMMENDATION_BODY_BYTES) });
 

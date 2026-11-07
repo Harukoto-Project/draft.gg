@@ -2,6 +2,7 @@
 
 import { POSITION_LABELS } from "@draftgg/shared";
 import type { Champion, RecommendationCandidate, RecommendationResponse } from "@draftgg/shared";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { CandidateCard } from "@/components/recommendation/CandidateCard";
@@ -20,7 +21,7 @@ import { useTeams } from "@/hooks/use-teams";
 import { useWeightOverrides } from "@/hooks/use-weights";
 import { formatMessage } from "@/lib/formatMessage";
 import { buildPoolHints, buildTeamPoolHints } from "@/lib/poolHints";
-import { requestWeights } from "@/lib/weights";
+import { requestWeights, resolveWeights, weightsTotal } from "@/lib/weights";
 import ja from "@/messages/ja.json";
 
 type View = "pick" | "ban";
@@ -57,6 +58,7 @@ export function RecommendationPanel({
     [solo, overrides],
   );
   const query = useRecommendations(state, ready, pools, weights);
+  const current = resolveWeights(solo ? "solo" : "team", overrides);
   const [view, setView] = useState<View>("pick");
   // ソロ(自分のロールを選んだとき)はプレイヤー、チーム(選んでいないとき)はチームのプールを使う
   const showPlayerPicker = solo && (profiles.data?.length ?? 0) > 0;
@@ -105,6 +107,7 @@ export function RecommendationPanel({
           <Suggestions
             data={query.data}
             view={view}
+            zeroWeights={weightsTotal(view === "ban" ? current.ban : current.pick) === 0}
             championsById={championsById}
             activeType={activeType}
             onPick={onPick}
@@ -124,16 +127,30 @@ export function RecommendationPanel({
 function Suggestions({
   data,
   view,
+  zeroWeights,
   championsById,
   activeType,
   onPick,
 }: {
   data: RecommendationResponse;
   view: View;
+  /** 表示中の種類(ピック/BAN)の重みがすべて 0 */
+  zeroWeights: boolean;
   championsById: ReadonlyMap<string, Champion>;
   activeType: "ban" | "pick" | null;
   onPick: (championId: string) => void;
 }) {
+  // 重みを全部 0 にしたときは、データ不足ではなく重みが原因だと伝える
+  if (zeroWeights) {
+    return (
+      <div className="flex max-w-sm flex-col items-start gap-2">
+        <p className="text-sm text-foreground">{ja.recommendation.zeroWeights}</p>
+        <Link href="/settings" className="text-sm text-primary underline underline-offset-4">
+          {ja.recommendation.openSettings}
+        </Link>
+      </div>
+    );
+  }
   const noStats =
     data.bans.length === 0 && data.picks.every((entry) => entry.candidates.length === 0);
   if (noStats) {

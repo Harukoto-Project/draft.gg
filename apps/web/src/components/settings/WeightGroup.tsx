@@ -1,6 +1,7 @@
 "use client";
 
 import { WeightSlider } from "@/components/settings/WeightSlider";
+import { weightsTotal } from "@/lib/weights";
 import ja from "@/messages/ja.json";
 
 interface WeightGroupProps<K extends string> {
@@ -21,10 +22,15 @@ export function WeightGroup<K extends keyof typeof ja.recommendation.factor>({
   defaults,
   onChange,
 }: WeightGroupProps<K>) {
-  const total = factors.reduce((sum, factor) => sum + values[factor], 0);
+  const total = weightsTotal(values);
   return (
     <section className="flex flex-col gap-3">
       <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      {total === 0 ? (
+        <p role="alert" className="text-xs text-destructive">
+          {ja.settings.allZero}
+        </p>
+      ) : null}
       {factors.map((factor) => {
         const label = ja.recommendation.factor[factor];
         return (

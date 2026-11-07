@@ -1,4 +1,10 @@
-import { BAN_WEIGHT_PRESETS, PICK_WEIGHT_PRESETS } from "@draftgg/shared";
+import {
+  BAN_FACTORS,
+  BAN_WEIGHT_PRESETS,
+  PICK_FACTORS,
+  PICK_WEIGHT_PRESETS,
+  PRESETS,
+} from "@draftgg/shared";
 import type { BanWeights, PickWeights, Preset, RecommendationRequest } from "@draftgg/shared";
 
 export interface PresetWeights {
@@ -93,4 +99,46 @@ export function requestWeights(
   const own = overrides[preset];
   if (!own?.pick && !own?.ban) return undefined;
   return { ...(own.pick ? { pick: own.pick } : {}), ...(own.ban ? { ban: own.ban } : {}) };
+}
+
+function pickGroup(value: unknown, factors: readonly string[]): Record<string, number> | undefined {
+  if (typeof value !== "object" || value === null) return undefined;
+  const result: Record<string, number> = {};
+  for (const factor of factors) {
+    const item = (value as Record<string, unknown>)[factor];
+    if (typeof item === "number" && Number.isFinite(item) && item >= 0 && item <= WEIGHT_MAX) {
+      result[factor] = item;
+    }
+  }
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
+/** 保存した文字列を読む。壊れた値や知らない要素は捨てる */
+export function parseWeightOverrides(raw: string): WeightOverrides {
+  let data: unknown;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    return {};
+  }
+  if (typeof data !== "object" || data === null) return {};
+
+  const result: WeightOverrides = {};
+  for (const preset of PRESETS) {
+    const own = (data as Record<string, unknown>)[preset];
+    if (typeof own !== "object" || own === null) continue;
+    const pick = pickGroup((own as Record<string, unknown>).pick, PICK_FACTORS);
+    const ban = pickGroup((own as Record<string, unknown>).ban, BAN_FACTORS);
+    if (!pick && !ban) continue;
+    result[preset] = {
+      ...(pick ? { pick } : {}),
+      ...(ban ? { ban } : {}),
+    } as PresetOverrides;
+  }
+  return result;
+}
+
+/** 重みの合計が 0 だと、その要素の候補が出なくなる */
+export function weightsTotal(weights: Readonly<Record<string, number>>): number {
+  return Object.values(weights).reduce((sum, value) => sum + value, 0);
 }
