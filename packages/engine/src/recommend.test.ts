@@ -446,4 +446,39 @@ describe("recommend", () => {
     // 習熟度 3/30 = 0.1 を 0.5、勝率(ベイズ平均 0.5 → 0.5)を 0.5 で重み付け
     expect(result.picks[0]?.candidates[0]?.factors.pool).toBe(0.3);
   });
+
+  it("味方のピックがあるときは、構成バランスで候補を並べ替える", () => {
+    const draft = createDraft();
+    draft.actions = [{ step: 0, type: "pick", side: "blue", championId: "Zed" }];
+    draft.assignments.blue.jungle = "Zed";
+    const snapshot = {
+      champions: [
+        { ...zed, tags: ["Assassin"] },
+        { ...ahri, tags: ["Mage"] },
+        { ...yasuo, tags: ["Fighter"] },
+      ],
+      meta: [metaRow("Ahri", "mid"), metaRow("Yasuo", "mid")],
+    };
+    const result = recommend(createInput(snapshot, draft));
+
+    const candidates = result.picks[0]?.candidates ?? [];
+    // 味方は AD のみ。AP のアーリを足すほうが構成を補える
+    expect(candidates.map((candidate) => candidate.championId)).toEqual(["Ahri", "Yasuo"]);
+    expect(candidates[0]?.factors.composition).toBeGreaterThan(
+      candidates[1]?.factors.composition ?? 1,
+    );
+    expect(candidates[0]?.reasons).toContain(
+      "味方はAD寄りのため、APを足して物理・魔法のバランスを補える",
+    );
+  });
+
+  it("味方のピックが無いときは、構成の要素を計算しない", () => {
+    const result = recommend(
+      createInput({
+        champions: [{ ...ahri, tags: ["Mage"] }],
+        meta: [metaRow("Ahri", "mid")],
+      }),
+    );
+    expect(result.picks[0]?.candidates[0]?.factors.composition).toBeUndefined();
+  });
 });

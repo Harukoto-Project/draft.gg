@@ -21,6 +21,8 @@ export interface ChampionRef {
   nameEn: string;
   numericKey: number;
   damageType: DamageType | null;
+  /** Data Dragon のタグ(Tank / Fighter など)。未取得なら省略 */
+  tags?: string[];
 }
 
 export interface MetaStat {

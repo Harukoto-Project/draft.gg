@@ -10,6 +10,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/pro", label: ja.nav.pro },
   { href: "/profiles", label: ja.nav.profiles },
   { href: "/teams", label: ja.nav.teams },
+  { href: "/settings", label: ja.nav.settings },
 ];
 
 export function navItemForPath(pathname: string): NavItem | undefined {

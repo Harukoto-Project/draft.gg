@@ -17,8 +17,10 @@ import { useMe } from "@/hooks/use-me";
 import { useProfiles } from "@/hooks/use-profiles";
 import { useRecommendations } from "@/hooks/use-recommendations";
 import { useTeams } from "@/hooks/use-teams";
+import { useWeightOverrides } from "@/hooks/use-weights";
 import { formatMessage } from "@/lib/formatMessage";
 import { buildPoolHints, buildTeamPoolHints } from "@/lib/poolHints";
+import { requestWeights } from "@/lib/weights";
 import ja from "@/messages/ja.json";
 
 type View = "pick" | "ban";
@@ -49,7 +51,12 @@ export function RecommendationPanel({
         : buildTeamPoolHints(team, profiles.data ?? []),
     [solo, player, team, profiles.data, state.me?.position],
   );
-  const query = useRecommendations(state, ready, pools);
+  const { overrides } = useWeightOverrides();
+  const weights = useMemo(
+    () => requestWeights(solo ? "solo" : "team", overrides),
+    [solo, overrides],
+  );
+  const query = useRecommendations(state, ready, pools, weights);
   const [view, setView] = useState<View>("pick");
   // ソロ(自分のロールを選んだとき)はプレイヤー、チーム(選んでいないとき)はチームのプールを使う
   const showPlayerPicker = solo && (profiles.data?.length ?? 0) > 0;
