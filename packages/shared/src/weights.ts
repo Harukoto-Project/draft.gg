@@ -3,7 +3,7 @@ export const PRESETS = ["solo", "team"] as const;
 
 export type Preset = (typeof PRESETS)[number];
 
-/** ピックの要素。プールはプールが渡されたロール、構成は未実装で計算しない。プロは pro 統計があるとき計算する。 */
+/** ピックの要素。プールはプールが渡されたロール、構成は味方のピックがあるとき、プロは pro 統計があるとき計算する。 */
 export const PICK_FACTORS = ["meta", "counter", "synergy", "pro", "pool", "composition"] as const;
 
 export type PickFactor = (typeof PICK_FACTORS)[number];
@@ -19,7 +19,7 @@ export type BanWeights = Record<BanFactor, number>;
 
 /**
  * データが無い要素は計算時に外し、残りの重みを合計1にする。
- * データが無い要素(プロが未集計、プール・構成は未実装)は結果に効かない。
+ * データが無い要素(プロが未集計、プール未登録、味方のピックが無い)は結果に効かない。
  */
 export const PICK_WEIGHT_PRESETS: Record<Preset, PickWeights> = {
   solo: { meta: 0.3, counter: 0.3, synergy: 0.1, pro: 0.05, pool: 0.2, composition: 0.05 },

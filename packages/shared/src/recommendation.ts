@@ -10,7 +10,8 @@ import { PRESETS } from "./weights.js";
 export const DEFAULT_RECOMMENDATION_LIMIT = 8;
 export const MAX_RECOMMENDATION_LIMIT = 20;
 
-const weight = z.number().min(0);
+/** 重みは 0〜1。上限が無いと、巨大な値の合計が Infinity になりスコアが NaN になる */
+const weight = z.number().min(0).max(1);
 
 /** 提案に渡すプール 1 件。除外したものは送らない。手動登録は games と winRate が null。 */
 export const poolHintEntrySchema = z.object({

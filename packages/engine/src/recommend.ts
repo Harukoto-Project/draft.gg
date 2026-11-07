@@ -8,6 +8,7 @@ import {
 } from "@draftgg/shared";
 import type {
   BanFactor,
+  ChampionRef,
   BanWeights,
   DraftState,
   MatchupStat,
@@ -26,6 +27,7 @@ import type {
   ProStat,
 } from "@draftgg/shared";
 
+import { scoreComposition } from "./composition.js";
 import {
   formatGames,
   formatRate,
@@ -53,6 +55,7 @@ export interface RecommendInput {
 
 interface Indexes {
   names: Map<string, string>;
+  refs: Map<string, ChampionRef>;
   meta: Map<string, MetaStat>;
   metaByPosition: Map<Position, MetaStat[]>;
   matchups: Map<string, MatchupStat>;
@@ -93,6 +96,7 @@ function rankPicks(
   const rows = indexes.metaByPosition.get(position) ?? [];
   const candidates: RecommendationCandidate[] = [];
   const pool = poolIndex(input.pools, position);
+  const allies = allyRefs(input.draft, indexes);
   for (const row of rows) {
     if (row.roleRate < MAJOR_ROLE_RATE || excluded.has(row.championId)) continue;
     const parts: Part[] = [];
@@ -110,11 +114,27 @@ function rankPicks(
       const scored = scorePool(pool.get(row.championId) ?? null);
       parts.push({ factor: "pool", weight: input.pickWeights.pool, scored });
     }
+    const composition = scoreComposition(allies, indexes.refs.get(row.championId));
+    if (composition) {
+      parts.push({
+        factor: "composition",
+        weight: input.pickWeights.composition,
+        scored: composition,
+      });
+    }
     const combined = combine(parts, PICK_FACTORS);
     if (!combined) continue;
     candidates.push(toCandidate(row.championId, position, indexes, combined));
   }
   return candidates.sort(byScore).slice(0, input.limit);
+}
+
+/** 味方のピック(チャンピオンの属性つき)。属性が引けないものは除く */
+function allyRefs(draft: DraftState, indexes: Indexes): ChampionRef[] {
+  return sidePicks(draft, draft.mySide).flatMap((id) => {
+    const ref = indexes.refs.get(id);
+    return ref ? [ref] : [];
+  });
 }
 
 /** そのロールのプール。1 件も無ければ(未登録・全て除外)計算しないので null */
@@ -352,6 +372,7 @@ function synergySample(row: SynergyStat, indexes: Indexes, allyPosition: Positio
 
 function buildIndexes(snapshot: StatsSnapshot): Indexes {
   const names = new Map(snapshot.champions.map((champion) => [champion.id, champion.nameJa]));
+  const refs = new Map(snapshot.champions.map((champion) => [champion.id, champion]));
   const meta = new Map<string, MetaStat>();
   const metaByPosition = new Map<Position, MetaStat[]>();
   for (const row of snapshot.meta) {
@@ -377,7 +398,7 @@ function buildIndexes(snapshot: StatsSnapshot): Indexes {
     rows.push(row);
     proByChampion.set(row.championId, rows);
   }
-  return { names, meta, metaByPosition, matchups, synergies, pro, proByChampion };
+  return { names, refs, meta, metaByPosition, matchups, synergies, pro, proByChampion };
 }
 
 function excludedChampions(draft: DraftState): Set<string> {

@@ -384,6 +384,7 @@ export async function loadStatsSnapshot(db: Database, tier: RankTier): Promise<S
     nameEn: row.nameEn,
     numericKey: row.numericKey,
     damageType: row.damageType,
+    tags: row.tags,
   }));
 
   return {

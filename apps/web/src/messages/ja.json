@@ -8,7 +8,8 @@
     "draft": "ドラフト",
     "pro": "プロ統計",
     "profiles": "プール",
-    "teams": "チーム"
+    "teams": "チーム",
+    "settings": "設定"
   },
   "header": {
     "theme": "表示テーマ",
@@ -234,6 +235,31 @@
       "payload_too_large": "送る内容が大きすぎます。"
     }
   },
+  "settings": {
+    "title": "設定",
+    "description": "提案の重みを調整します。変更はこのブラウザに保存され、ドラフト画面の提案にすぐ反映されます。",
+    "weightsTitle": "提案の重み",
+    "weightsNote": "各要素の重みは、データがある要素だけで合計が1になるよう自動で割り合てます。数値は0〜100で、0にするとその要素を使いません。",
+    "tierTitle": "ランク帯",
+    "tierNote": "ランク帯は、当面ダイヤ以上で固定です。",
+    "tierValue": "ダイヤ以上",
+    "presets": {
+      "solo": "ソロ",
+      "team": "チーム"
+    },
+    "presetDescriptions": {
+      "solo": "自分のロールを選んだときの重みです。",
+      "team": "ロールを選ばず、チーム全体を見るときの重みです。"
+    },
+    "pick": "ピック",
+    "ban": "BAN",
+    "reset": "初期値に戻す",
+    "allZero": "すべて0のため、この要素の候補は出なくなります",
+    "customized": "初期値から変更しています",
+    "default": "初期値",
+    "share": "割合 {percent}%",
+    "sliderLabel": "{preset}・{kind}・{factor}の重み"
+  },
   "teams": {
     "title": "チーム",
     "description": "5人のプレイヤーをロールに割り当てて、チームとして登録します。ドラフト画面でチームを選ぶと、ロールごとにプレイヤーのプールを使った提案が出ます。",
@@ -305,6 +331,8 @@
       "composition": "構成",
       "threat": "脅威"
     },
+    "zeroWeights": "重みがすべて0のため、候補を出せません。設定で重みを調整してください。",
+    "openSettings": "設定を開く",
     "disclaimer": "統計から計算した判断材料で、勝敗を保証するものではありません"
   }
 }
