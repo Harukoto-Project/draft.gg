@@ -5,7 +5,8 @@
   },
   "nav": {
     "label": "ページ",
-    "draft": "ドラフト"
+    "draft": "ドラフト",
+    "pro": "プロ統計"
   },
   "header": {
     "theme": "表示テーマ",
@@ -51,6 +52,35 @@
     "emptyCatalog": "チャンピオンがまだ取り込まれていません。取り込みが終わってから再読み込みしてください。",
     "slotLabel": "{side}の{type}{index}",
     "assignRole": "{slot} {champion}を{role}にする"
+  },
+  "pro": {
+    "title": "プロ統計",
+    "description": "主要リーグと国際大会のドラフトでの、チャンピオンごとの採用率・BAN率・勝率です。",
+    "league": "リーグ",
+    "leagueAll": "全て",
+    "leagueFirstStand": "First Stand",
+    "patch": "パッチ",
+    "patchRecent": "直近",
+    "scopeSummary": "対象: パッチ{patches}、{games}試合",
+    "scopeNone": "対象の試合がありません",
+    "searchPlaceholder": "チャンピオン名",
+    "count": "{count}件",
+    "loadError": "プロ統計を読み込めませんでした。",
+    "retry": "再読み込み",
+    "empty": "プロ試合の統計がまだ集計されていません。",
+    "noMatches": "一致するチャンピオンはいません",
+    "column": {
+      "champion": "チャンピオン",
+      "position": "ロール",
+      "games": "試合",
+      "picks": "ピック",
+      "bans": "BAN",
+      "presence": "採用率",
+      "winRate": "勝率",
+      "early": "序盤ピック率"
+    },
+    "presenceHint": "採用率はピックとBANを合わせた、試合あたりの登場率です",
+    "sortBy": "{column}で並べ替える"
   },
   "recommendation": {
     "title": "提案",

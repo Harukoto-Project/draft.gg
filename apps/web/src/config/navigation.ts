@@ -5,7 +5,10 @@ export interface NavItem {
   label: string;
 }
 
-export const NAV_ITEMS: readonly NavItem[] = [{ href: "/draft", label: ja.nav.draft }];
+export const NAV_ITEMS: readonly NavItem[] = [
+  { href: "/draft", label: ja.nav.draft },
+  { href: "/pro", label: ja.nav.pro },
+];
 
 export function navItemForPath(pathname: string): NavItem | undefined {
   return NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
