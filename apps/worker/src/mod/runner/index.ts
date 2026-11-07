@@ -27,6 +27,11 @@ export interface JobRunner {
   cancelRetries(): void;
   /** 実行中のジョブがすべて終わるまで待つ(停止時に使う) */
   drain(): Promise<void>;
+  /**
+   * ジョブの外で始めた後続処理を、停止時の drain が終わるまで待つ。
+   * 新パッチ検知で OP.GG のジョブを続けて起動するときに使う。
+   */
+  track(work: Promise<unknown>): void;
 }
 
 function abortableSleep(ms: number, signal: AbortSignal): Promise<void> {
@@ -51,6 +56,7 @@ export function createJobRunner(options: RunnerOptions): JobRunner {
 
   // 多重起動の防止(worker は1プロセスのため、プロセス内で管理する)
   const running = new Map<string, Promise<RunOutcome>>();
+  const background = new Set<Promise<unknown>>();
   const retryAbort = new AbortController();
 
   /** 記録の更新に失敗しても、ジョブの結果や再試行には影響させない */
@@ -116,8 +122,18 @@ export function createJobRunner(options: RunnerOptions): JobRunner {
       retryAbort.abort();
     },
 
+    track(work) {
+      const tracked = work.finally(() => {
+        background.delete(tracked);
+      });
+      background.add(tracked);
+    },
+
     async drain() {
-      await Promise.allSettled(running.values());
+      // 後続ジョブが drain の途中で次のジョブを起動しても、それも待ち切る
+      while (running.size > 0 || background.size > 0) {
+        await Promise.allSettled([...running.values(), ...background]);
+      }
     },
   };
 }

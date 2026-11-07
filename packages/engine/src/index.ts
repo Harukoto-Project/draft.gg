@@ -1,2 +1,2 @@
-// 提案スコア計算(純粋関数)をここから公開する。DB・HTTP には依存させない。
-export {};
+export { recommend } from "./recommend.js";
+export type { RecommendInput } from "./recommend.js";

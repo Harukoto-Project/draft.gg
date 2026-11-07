@@ -100,6 +100,28 @@ describe("createJobRunner", () => {
     expect(runs).toHaveLength(1);
   });
 
+  it("drain は track した後続処理も待つ", async () => {
+    const { store } = createFakeStore();
+    const runner = createJobRunner({ store, logger: noopLogger, sleep: noSleep });
+    let finished = false;
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+
+    runner.track(
+      gate.then(() => {
+        finished = true;
+      }),
+    );
+    const drained = runner.drain();
+    expect(finished).toBe(false);
+    release();
+    await drained;
+
+    expect(finished).toBe(true);
+  });
+
   it("drain は実行中のジョブの完了を待つ", async () => {
     const { store, runs } = createFakeStore();
     const runner = createJobRunner({ store, logger: noopLogger, sleep: noSleep });
