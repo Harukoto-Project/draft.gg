@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { ThemeMenu } from "@/components/layout/ThemeMenu";
+import { UserMenu } from "@/components/layout/UserMenu";
 import { NAV_ITEMS, navItemForPath } from "@/config/navigation";
 import { cn } from "@/lib/utils";
 import ja from "@/messages/ja.json";
@@ -35,7 +36,8 @@ export function AppHeader() {
           );
         })}
       </nav>
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center gap-1">
+        <UserMenu />
         <ThemeMenu />
       </div>
     </header>

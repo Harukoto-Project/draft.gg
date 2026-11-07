@@ -14,6 +14,11 @@
     "themeDark": "ダーク",
     "themeSystem": "システム"
   },
+  "auth": {
+    "signIn": "Discordでログイン",
+    "signInError": "ログインに失敗しました",
+    "signOut": "ログアウト"
+  },
   "footer": {
     "riot": "このサービスはRiot Gamesの承認を受けたものではなく、Riot Gamesの見解や意見を反映するものでもありません。League of LegendsおよびRiot Gamesは、Riot Games, Inc.の商標または登録商標です。League of Legends © Riot Games, Inc.",
     "sources": "データ出典: Data Dragon、OP.GG、Oracle's Elixir、Leaguepedia"

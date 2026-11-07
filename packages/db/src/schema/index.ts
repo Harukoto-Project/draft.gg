@@ -1,3 +1,4 @@
+export * from "./auth.js";
 export * from "./champions.js";
 export * from "./job-runs.js";
 export * from "./matchups.js";

@@ -11,6 +11,7 @@ describe("loadConfig", () => {
       host: "127.0.0.1",
       port: 3001,
       databaseUrl: DATABASE_URL,
+      auth: null,
     });
   });
 
@@ -40,5 +41,46 @@ describe("loadConfig", () => {
 
   it.each(["abc", "0", "70000", "3000.5"])("不正な API_PORT(%s)はエラーにする", (port) => {
     expect(() => loadConfig({ ...baseEnv, API_PORT: port })).toThrow("API_PORT");
+  });
+});
+
+describe("loadConfig のログイン設定", () => {
+  const authEnv = {
+    ...baseEnv,
+    BETTER_AUTH_URL: "https://draft.example.com/",
+    BETTER_AUTH_SECRET: "x".repeat(32),
+    DISCORD_CLIENT_ID: "client-id",
+    DISCORD_CLIENT_SECRET: "client-secret",
+  };
+
+  it("4つとも空ならログインなしで動く", () => {
+    expect(loadConfig({ ...baseEnv, BETTER_AUTH_URL: "", DISCORD_CLIENT_ID: "" }).auth).toBeNull();
+  });
+
+  it("そろっていれば有効にし、URL は origin にそろえる", () => {
+    expect(loadConfig(authEnv).auth).toEqual({
+      baseUrl: "https://draft.example.com",
+      secret: "x".repeat(32),
+      discordClientId: "client-id",
+      discordClientSecret: "client-secret",
+    });
+  });
+
+  it("一部だけ設定されていたら、足りないキー名を出してエラーにする", () => {
+    expect(() => loadConfig({ ...baseEnv, DISCORD_CLIENT_ID: "client-id" })).toThrow(
+      "BETTER_AUTH_URL, BETTER_AUTH_SECRET, DISCORD_CLIENT_SECRET",
+    );
+  });
+
+  it("URL が不正、またはシークレットが短いとエラーにする", () => {
+    expect(() => loadConfig({ ...authEnv, BETTER_AUTH_URL: "draft.example.com" })).toThrow(
+      "BETTER_AUTH_URL",
+    );
+    expect(() => loadConfig({ ...authEnv, BETTER_AUTH_URL: "ftp://draft.example.com" })).toThrow(
+      "BETTER_AUTH_URL",
+    );
+    expect(() => loadConfig({ ...authEnv, BETTER_AUTH_SECRET: "short" })).toThrow(
+      "BETTER_AUTH_SECRET",
+    );
   });
 });
