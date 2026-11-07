@@ -29,8 +29,8 @@ export function ProStatsScreen() {
   });
 
   const stats = useProStats({ league, patch });
-  // 選べるパッチは、絞り込みなしの応答にある直近のパッチ
-  const recent = useProStats({});
+  // 選べるパッチは、選んだリーグ(未選択なら全体)の直近のパッチ
+  const recent = useProStats({ league });
   const champions = useChampions();
   const championsById = useMemo(() => {
     const map = new Map<string, Champion>();
@@ -67,7 +67,11 @@ export function ProStatsScreen() {
       <div className="flex shrink-0 flex-col gap-3 bg-card p-3">
         <ProFilters
           league={league}
-          onLeagueChange={setLeague}
+          onLeagueChange={(next) => {
+            setLeague(next);
+            // パッチはリーグごとに違うため、選び直してもらう
+            setPatch(undefined);
+          }}
           patch={patch}
           patches={recent.data?.patches ?? []}
           onPatchChange={setPatch}

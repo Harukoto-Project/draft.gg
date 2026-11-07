@@ -3,7 +3,8 @@ import {
   PRO_SCOPE_MAJOR,
   isProLeague,
   proStatsScope,
-  selectRecentProPatches,
+  selectProWindows,
+  windowPatches,
 } from "@draftgg/shared";
 import type {
   ProChampionStatRow,
@@ -245,11 +246,18 @@ export async function loadProChampions(
   query: { league?: ProLeague; patch?: string },
 ): Promise<ProChampionsResponse> {
   const counts = await db
-    .select({ patch: proGames.patch, games: sql<string | number>`count(*)` })
+    .select({
+      league: proGames.league,
+      patch: proGames.patch,
+      games: sql<string | number>`count(*)`,
+    })
     .from(proGames)
-    .groupBy(proGames.patch);
-  const recent = selectRecentProPatches(
-    counts.map((row) => ({ patch: row.patch, games: Number(row.games) })),
+    .groupBy(proGames.league, proGames.patch);
+  const recent = windowPatches(
+    selectProWindows(
+      counts.map((row) => ({ league: row.league, patch: row.patch, games: Number(row.games) })),
+    ),
+    query.league,
   );
   const scope = proStatsScope(query.league, query.patch);
   const [statRows, championRows] = await Promise.all([

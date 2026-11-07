@@ -4,7 +4,8 @@ import {
   PRO_LEAGUES,
   PRO_SCOPE_MAJOR,
   proStatsScope,
-  selectRecentProPatches,
+  selectProWindows,
+  windowPatches,
 } from "@draftgg/shared";
 import type { Position, ProChampionStatRow, ProGameDraft } from "@draftgg/shared";
 
@@ -16,33 +17,37 @@ interface PickCount {
 }
 
 /**
- * 試合が 20 件以上あるパッチのうち新しい 2 つを、major・リーグ別・パッチ別に集計する。
+ * リーグごとに、試合が 20 件以上あるパッチのうち新しい 2 つ(窓)を選び、
+ * 各リーグの窓に入る試合を、major・リーグ別・パッチ別に集計する。
+ * シーズンが終わったリーグも、そのリーグの最新のパッチで残る。
  * 条件を満たすパッチが無いときは空を返す(前回の統計を消さないため、保存側で中止する)。
  */
 export function aggregateProStats(games: ProGameDraft[], computedAt: Date): ProChampionStatRow[] {
-  const counts = new Map<string, number>();
-  for (const game of games) counts.set(game.patch, (counts.get(game.patch) ?? 0) + 1);
-  const patches = selectRecentProPatches(
-    [...counts].map(([patch, count]) => ({ patch, games: count })),
-  );
-  if (patches.length === 0) return [];
+  const counts = new Map<string, { league: string; patch: string; games: number }>();
+  for (const game of games) {
+    const key = `${game.league}\u0000${game.patch}`;
+    const entry = counts.get(key) ?? { league: game.league, patch: game.patch, games: 0 };
+    entry.games += 1;
+    counts.set(key, entry);
+  }
+  const windows = selectProWindows([...counts.values()]);
+  const inWindow = games.filter((game) => windows.get(game.league)?.includes(game.patch));
+  if (inWindow.length === 0) return [];
 
-  const window = new Set(patches);
-  const inWindow = games.filter((game) => window.has(game.patch));
   const rows = statsFor(inWindow, PRO_SCOPE_MAJOR, computedAt);
 
   for (const league of PRO_LEAGUES) {
     const leagueGames = inWindow.filter((game) => game.league === league);
     if (leagueGames.length === 0) continue;
     rows.push(...statsFor(leagueGames, proStatsScope(league), computedAt));
-    for (const patch of patches) {
+    for (const patch of windows.get(league) ?? []) {
       const both = leagueGames.filter((game) => game.patch === patch);
       if (both.length === 0) continue;
       rows.push(...statsFor(both, proStatsScope(league, patch), computedAt));
     }
   }
 
-  for (const patch of patches) {
+  for (const patch of windowPatches(windows)) {
     const patchGames = inWindow.filter((game) => game.patch === patch);
     if (patchGames.length === 0) continue;
     rows.push(...statsFor(patchGames, proStatsScope(undefined, patch), computedAt));
