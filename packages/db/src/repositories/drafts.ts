@@ -7,7 +7,7 @@ import { drafts } from "../schema/index.js";
 
 type DraftRow = typeof drafts.$inferSelect;
 
-/** 形が今のスキーマに合わない古い行は、読み飛ばす */
+/** 形が今のスキーマに合わない古い行は、読み飛ばす(上限にも数えない) */
 function toSavedDraft(row: DraftRow): SavedDraft | null {
   const state = draftStateSchema.safeParse(row.state);
   if (!state.success) return null;
@@ -17,6 +17,11 @@ function toSavedDraft(row: DraftRow): SavedDraft | null {
     note: row.note,
     createdAt: row.createdAt.toISOString(),
   };
+}
+
+/** 読み取れる(今のスキーマに合う)行の数 */
+function countReadable(rows: readonly Pick<DraftRow, "state">[]): number {
+  return rows.filter((row) => draftStateSchema.safeParse(row.state).success).length;
 }
 
 /** ドラフトの保存先。すべての操作を ownerId で絞り、他人のデータには触れない */
@@ -35,9 +40,9 @@ export function createDraftStore(db: Database): DraftStore {
         .select()
         .from(drafts)
         .where(eq(drafts.ownerId, ownerId))
-        .orderBy(desc(drafts.createdAt))
-        .limit(MAX_DRAFTS_PER_USER);
-      return rows.flatMap((row) => toSavedDraft(row) ?? []);
+        .orderBy(desc(drafts.createdAt));
+      // 読み取れない行を除いても、上限までに収まる(読み取れない行は作成の上限に数えない)
+      return rows.flatMap((row) => toSavedDraft(row) ?? []).slice(0, MAX_DRAFTS_PER_USER);
     },
 
     async create(ownerId, input) {
@@ -47,7 +52,14 @@ export function createDraftStore(db: Database): DraftStore {
           .select({ value: count() })
           .from(drafts)
           .where(eq(drafts.ownerId, ownerId));
-        if ((total?.value ?? 0) >= MAX_DRAFTS_PER_USER) return "limit" as const;
+        if ((total?.value ?? 0) >= MAX_DRAFTS_PER_USER) {
+          // スキーマを変えたあとの読み取れない行は、画面に出ず消せないので、上限に数えない
+          const rows = await tx
+            .select({ state: drafts.state })
+            .from(drafts)
+            .where(eq(drafts.ownerId, ownerId));
+          if (countReadable(rows) >= MAX_DRAFTS_PER_USER) return "limit" as const;
+        }
         await tx.insert(drafts).values({
           id,
           ownerId,
