@@ -14,7 +14,7 @@ export function DraftScreenSkeleton() {
         <Skeleton className="col-span-2 h-10 lg:col-span-1 lg:col-start-2 lg:row-start-1" />
         <BansSkeleton className="lg:col-start-3 lg:row-start-1" />
         <PicksSkeleton className="lg:col-start-1 lg:row-start-2" />
-        <div className="col-span-2 rounded-md bg-card p-3 lg:col-span-1 lg:col-start-2 lg:row-start-2">
+        <div className="col-span-2 bg-card p-3 lg:col-span-1 lg:col-start-2 lg:row-start-2">
           <ChampionGridSkeleton />
         </div>
         <PicksSkeleton className="lg:col-start-3 lg:row-start-2" />
@@ -25,7 +25,7 @@ export function DraftScreenSkeleton() {
 
 function BansSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn("flex flex-col gap-2 rounded-md bg-card p-3", className)}>
+    <div className={cn("flex flex-col gap-2 bg-card p-3", className)}>
       <Skeleton className="h-5 w-16" />
       <div className="grid grid-cols-5 gap-1">
         {Array.from({ length: 5 }, (_, index) => (
@@ -38,7 +38,7 @@ function BansSkeleton({ className }: { className?: string }) {
 
 function PicksSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn("hidden flex-col gap-2 rounded-md bg-card p-3 lg:flex", className)}>
+    <div className={cn("hidden flex-col gap-2 bg-card p-3 lg:flex", className)}>
       {Array.from({ length: 5 }, (_, index) => (
         <Skeleton key={index} className="h-16 w-full" />
       ))}

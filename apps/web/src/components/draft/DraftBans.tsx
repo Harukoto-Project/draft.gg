@@ -30,7 +30,7 @@ export function DraftBans({
     <section
       aria-label={`${label}の${ja.draft.ban}`}
       className={cn(
-        "flex min-w-0 flex-col gap-2 rounded-md border-t-4 bg-card p-3",
+        "flex min-w-0 flex-col gap-2 border-t-4 bg-card p-3",
         side === "blue" ? "border-side-blue" : "border-side-red",
         className,
       )}

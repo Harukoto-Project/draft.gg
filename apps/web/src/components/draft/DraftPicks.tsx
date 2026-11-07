@@ -41,7 +41,7 @@ export function DraftPicks({
     <section
       aria-label={`${label}の${ja.draft.pick}`}
       className={cn(
-        "flex min-h-0 min-w-0 flex-col overflow-y-auto rounded-md bg-card p-3",
+        "flex min-h-0 min-w-0 flex-col overflow-y-auto bg-card p-3",
         side === "blue" ? "border-l-4 border-side-blue" : "border-r-4 border-side-red",
         className,
       )}

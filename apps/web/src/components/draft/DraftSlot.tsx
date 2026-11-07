@@ -35,7 +35,7 @@ export function DraftSlot({
       aria-pressed={active}
       onClick={onSelect}
       className={cn(
-        "relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden rounded-sm border bg-background transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+        "relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden border bg-background transition-colors focus-visible:ring-2 focus-visible:ring-ring",
         active && "border-gold bg-gold/15",
         !active && suggested && "border-gold/70",
         !active && !suggested && "border-dashed border-border",

@@ -47,7 +47,7 @@ function DraftWorkspace() {
             className="order-1 lg:order-none lg:col-start-1 lg:row-start-1"
           />
           <p
-            className="order-3 col-span-2 flex items-center justify-center rounded-md bg-card px-3 py-2 text-center text-base font-semibold text-gold lg:order-none lg:col-span-1 lg:col-start-2 lg:row-start-1"
+            className="order-3 col-span-2 flex items-center justify-center bg-card px-3 py-2 text-center text-base font-semibold text-gold lg:order-none lg:col-span-1 lg:col-start-2 lg:row-start-1"
             aria-live="polite"
           >
             {turnHint(draft.state)}
@@ -62,7 +62,7 @@ function DraftWorkspace() {
             championsById={championsById}
             className="order-4 lg:order-none lg:col-start-1 lg:row-start-2"
           />
-          <div className="order-6 col-span-2 flex h-[28rem] min-h-0 flex-col overflow-hidden rounded-md bg-card p-3 lg:order-none lg:col-span-1 lg:col-start-2 lg:row-start-2 lg:h-auto">
+          <div className="order-6 col-span-2 flex h-[28rem] min-h-0 flex-col overflow-hidden bg-card p-3 lg:order-none lg:col-span-1 lg:col-start-2 lg:row-start-2 lg:h-auto">
             <div className="min-h-0 flex-1">
               <ChampionGrid
                 taken={championIdsInUse(draft.state)}
