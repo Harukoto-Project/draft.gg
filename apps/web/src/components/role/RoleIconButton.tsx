@@ -27,14 +27,18 @@ export function RoleIconButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "inline-flex size-6 shrink-0 cursor-pointer items-center justify-center border transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40",
-        pressed
-          ? "border-gold bg-gold text-background"
-          : "border-border bg-background/60 text-muted-foreground hover:text-foreground",
+        "group inline-flex size-6 shrink-0 cursor-pointer items-center justify-center border transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40",
+        pressed ? "border-gold bg-gold/20" : "border-border bg-background/60 hover:border-gold/60",
         className,
       )}
     >
-      <RoleIcon position={position} className="size-4" />
+      <RoleIcon
+        position={position}
+        className={cn(
+          "size-5 transition-[filter,opacity]",
+          pressed ? "" : "opacity-75 grayscale group-hover:opacity-100 group-hover:grayscale-0",
+        )}
+      />
     </button>
   );
 }
