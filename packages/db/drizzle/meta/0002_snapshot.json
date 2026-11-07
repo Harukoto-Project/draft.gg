@@ -716,8 +716,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {
-        "synergies_patch_tier_champion_id_position_ally_id_ally_position_pk": {
-          "name": "synergies_patch_tier_champion_id_position_ally_id_ally_position_pk",
+        "synergies_pk": {
+          "name": "synergies_pk",
           "columns": [
             "patch",
             "tier",

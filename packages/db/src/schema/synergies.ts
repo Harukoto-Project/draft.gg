@@ -16,6 +16,8 @@ export const synergies = mysqlTable(
   },
   (table) => [
     primaryKey({
+      // 自動生成の名前は MySQL の識別子の上限(64 文字)を超えるので、短い名前を付ける
+      name: "synergies_pk",
       columns: [
         table.patch,
         table.tier,
