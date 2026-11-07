@@ -1,0 +1,131 @@
+"use client";
+
+import { championMatchesQuery } from "@draftgg/shared";
+import type { Champion } from "@draftgg/shared";
+import { useMemo, useState } from "react";
+
+import { ChampionGridSkeleton } from "@/components/champion/ChampionGridSkeleton";
+import { ChampionIcon } from "@/components/champion/ChampionIcon";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useChampions } from "@/hooks/use-champions";
+import { formatMessage } from "@/lib/formatMessage";
+import { cn } from "@/lib/utils";
+import ja from "@/messages/ja.json";
+
+export function ChampionGrid({
+  taken,
+  canPick,
+  onPick,
+}: {
+  taken: ReadonlySet<string>;
+  canPick: boolean;
+  onPick: (championId: string) => void;
+}) {
+  const query = useChampions();
+  const [search, setSearch] = useState("");
+
+  if (query.isPending) return <ChampionGridSkeleton />;
+
+  if (query.isError) {
+    return (
+      <div className="flex h-full flex-col items-start justify-center gap-3">
+        <p className="text-sm text-zinc-700 dark:text-zinc-300">{ja.draft.loadError}</p>
+        <Button variant="outline" onClick={() => void query.refetch()}>
+          {ja.draft.retry}
+        </Button>
+      </div>
+    );
+  }
+
+  if (query.data.champions.length === 0) {
+    return (
+      <div className="flex h-full items-center">
+        <p className="max-w-sm text-sm text-zinc-700 dark:text-zinc-300">{ja.draft.emptyCatalog}</p>
+      </div>
+    );
+  }
+
+  return (
+    <ChampionResults
+      champions={query.data.champions}
+      search={search}
+      onSearch={setSearch}
+      taken={taken}
+      canPick={canPick}
+      onPick={onPick}
+    />
+  );
+}
+
+function ChampionResults({
+  champions,
+  search,
+  onSearch,
+  taken,
+  canPick,
+  onPick,
+}: {
+  champions: Champion[];
+  search: string;
+  onSearch: (value: string) => void;
+  taken: ReadonlySet<string>;
+  canPick: boolean;
+  onPick: (championId: string) => void;
+}) {
+  const visible = useMemo(
+    () =>
+      champions
+        .filter((champion) => championMatchesQuery(champion, search))
+        .sort((left, right) => left.nameJa.localeCompare(right.nameJa, "ja")),
+    [champions, search],
+  );
+
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      <div className="flex shrink-0 items-center gap-3">
+        <Input
+          value={search}
+          onChange={(event) => onSearch(event.target.value)}
+          placeholder={ja.draft.searchPlaceholder}
+          aria-label={ja.draft.searchPlaceholder}
+          className="max-w-sm"
+        />
+        <p className="shrink-0 text-xs text-muted-foreground">
+          {formatMessage(ja.draft.searchCount, { count: String(visible.length) })}
+        </p>
+      </div>
+      {visible.length === 0 ? (
+        <p className="text-sm text-zinc-700 dark:text-zinc-300">{ja.draft.noMatches}</p>
+      ) : (
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] gap-1">
+            {visible.map((champion) => {
+              const used = taken.has(champion.id);
+              return (
+                <button
+                  key={champion.id}
+                  type="button"
+                  disabled={!canPick || used}
+                  aria-label={used ? `${champion.nameJa}、${ja.draft.taken}` : champion.nameJa}
+                  onClick={() => onPick(champion.id)}
+                  className={cn(
+                    "flex min-w-0 cursor-pointer flex-col items-center gap-1 rounded-sm p-1 transition-colors hover:bg-neutral-200 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed dark:hover:bg-neutral-700",
+                    used && "opacity-40",
+                  )}
+                >
+                  <span className="relative size-12 overflow-hidden rounded-sm">
+                    <ChampionIcon champion={champion} />
+                  </span>
+                  <span className="w-full truncate text-xs text-zinc-700 dark:text-zinc-300">
+                    {champion.nameJa}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

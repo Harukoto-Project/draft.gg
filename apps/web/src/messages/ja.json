@@ -1,6 +1,57 @@
 {
   "app": {
     "title": "Draft.GG",
-    "description": "League of Legends のBAN・ピックを補助するツール"
+    "description": "League of LegendsのBAN・ピックを補助するツール"
+  },
+  "nav": {
+    "draft": "ドラフト",
+    "openMenu": "メニューを開く"
+  },
+  "header": {
+    "theme": "表示テーマ",
+    "themeLight": "ライト",
+    "themeDark": "ダーク",
+    "themeSystem": "システム"
+  },
+  "footer": {
+    "riot": "このサービスはRiot Gamesの承認を受けたものではなく、Riot Gamesの見解や意見を反映するものでもありません。League of LegendsおよびRiot Gamesは、Riot Games, Inc.の商標または登録商標です。League of Legends © Riot Games, Inc.",
+    "sources": "データ出典: Data Dragon、OP.GG、Oracle's Elixir、Leaguepedia"
+  },
+  "draft": {
+    "title": "ドラフト",
+    "format": "形式",
+    "formatRanked": "ランク",
+    "formatTournament": "大会",
+    "mySide": "自分の陣営",
+    "mine": "自分",
+    "sideBlue": "青",
+    "sideRed": "赤",
+    "reset": "やり直す",
+    "resetTitle": "ドラフトをやり直しますか",
+    "resetDescription": "入力したBANとピックは消えます。",
+    "resetConfirm": "やり直す",
+    "cancel": "キャンセル",
+    "formatChangeTitle": "形式を変えますか",
+    "formatChangeDescription": "形式を変えると、入力したBANとピックは消えます。",
+    "formatChangeConfirm": "形式を変える",
+    "ban": "BAN",
+    "pick": "ピック",
+    "clear": "外す",
+    "role": "ロール",
+    "roleUnset": "未設定",
+    "searchPlaceholder": "チャンピオン名",
+    "searchCount": "{count}件",
+    "noMatches": "一致するチャンピオンはいません",
+    "taken": "使用済み",
+    "nextBan": "BANは順不同です。空いている枠を選んでください",
+    "nextAction": "次は{side}の{type}です",
+    "complete": "すべての枠が埋まりました",
+    "chooseSlot": "入力する枠を選んでください",
+    "patch": "パッチ{version}",
+    "patchUnknown": "パッチ未取得",
+    "loadError": "チャンピオン一覧を読み込めませんでした。",
+    "retry": "再読み込み",
+    "emptyCatalog": "チャンピオンがまだ取り込まれていません。取り込みが終わってから再読み込みしてください。",
+    "slotLabel": "{side}の{type}{index}"
   }
 }
