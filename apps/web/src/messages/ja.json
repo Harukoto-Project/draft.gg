@@ -165,6 +165,43 @@
       "retryAfter": "あと{minutes}分ほど待ってください。"
     }
   },
+  "drafts": {
+    "save": "保存",
+    "saved": "保存済み",
+    "saveTitle": "ドラフトを保存",
+    "saveDescription": "いまのドラフトを、ログイン中のアカウントに保存します。",
+    "note": "メモ(任意)",
+    "notePlaceholder": "例: 大会の練習 1戦目",
+    "submit": "保存する",
+    "cancel": "キャンセル",
+    "savedTitle": "保存したドラフト",
+    "savedDescription": "読み込むと、いまのドラフトは置き換わります。",
+    "empty": "保存したドラフトはまだありません。",
+    "loadError": "保存したドラフトを読み込めませんでした。",
+    "retry": "再読み込み",
+    "load": "読み込む",
+    "delete": "削除",
+    "deleteLabel": "{label}を削除",
+    "close": "閉じる",
+    "summary": "BAN {bans}・ピック {picks}",
+    "noNote": "メモなし",
+    "format": {
+      "ranked": "ランク",
+      "tournament": "大会"
+    },
+    "side": {
+      "blue": "青",
+      "red": "赤"
+    },
+    "errors": {
+      "unknown": "うまくいきませんでした。時間をおいてもう一度お試しください。",
+      "unauthorized": "ログインの有効期限が切れました。もう一度ログインしてください。",
+      "invalid_request": "保存する内容を確認してください。メモは200文字までです。",
+      "draft_limit": "保存できるドラフトの上限に達しています。不要なものを削除してください。",
+      "not_found": "ドラフトが見つかりません。削除された可能性があります。",
+      "payload_too_large": "送る内容が大きすぎます。"
+    }
+  },
   "teams": {
     "title": "チーム",
     "description": "5人のプレイヤーをロールに割り当てて、チームとして登録します。ドラフト画面でチームを選ぶと、ロールごとにプレイヤーのプールを使った提案が出ます。",

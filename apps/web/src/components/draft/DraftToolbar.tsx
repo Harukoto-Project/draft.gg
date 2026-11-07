@@ -4,6 +4,8 @@ import { draftHasChampion } from "@draftgg/shared";
 import type { DraftFormat } from "@draftgg/shared";
 import { useState } from "react";
 
+import { SaveDraftDialog } from "@/components/draft/SaveDraftDialog";
+import { SavedDraftsDialog } from "@/components/draft/SavedDraftsDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useDraft } from "@/hooks/use-draft";
+import { useMe } from "@/hooks/use-me";
 import { formatMessage } from "@/lib/formatMessage";
 import ja from "@/messages/ja.json";
 
@@ -24,6 +27,10 @@ export function DraftToolbar({ patch }: { patch: string | null }) {
   const { state, chooseFormat, chooseSide, reset } = useDraft();
   const [pendingFormat, setPendingFormat] = useState<DraftFormat | null>(null);
   const [resetOpen, setResetOpen] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [savedOpen, setSavedOpen] = useState(false);
+  const me = useMe();
+  const signedIn = Boolean(me.data?.user);
   const dirty = draftHasChampion(state);
 
   function requestFormat(value: string) {
@@ -71,10 +78,26 @@ export function DraftToolbar({ patch }: { patch: string | null }) {
           <ToggleGroupItem value="blue">{ja.draft.sideBlue}</ToggleGroupItem>
           <ToggleGroupItem value="red">{ja.draft.sideRed}</ToggleGroupItem>
         </ToggleGroup>
+        {signedIn ? (
+          <>
+            <Button variant="outline" disabled={!dirty} onClick={() => setSaveOpen(true)}>
+              {ja.drafts.save}
+            </Button>
+            <Button variant="outline" onClick={() => setSavedOpen(true)}>
+              {ja.drafts.saved}
+            </Button>
+          </>
+        ) : null}
         <Button variant="outline" disabled={!dirty} onClick={() => setResetOpen(true)}>
           {ja.draft.reset}
         </Button>
       </div>
+      {signedIn ? (
+        <>
+          <SaveDraftDialog open={saveOpen} onOpenChange={setSaveOpen} />
+          <SavedDraftsDialog open={savedOpen} onOpenChange={setSavedOpen} />
+        </>
+      ) : null}
       <AlertDialog
         open={pendingFormat !== null}
         onOpenChange={(open) => !open && setPendingFormat(null)}
