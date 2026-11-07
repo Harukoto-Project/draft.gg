@@ -13,6 +13,8 @@ import type {
   MatchupStat,
   MetaStat,
   PickFactor,
+  PoolHintEntry,
+  PoolHints,
   PickWeights,
   Position,
   Preset,
@@ -31,6 +33,7 @@ import {
   round4,
   scoreBanMeta,
   scorePickMeta,
+  scorePool,
   scoreProBan,
   scoreProPick,
   scoreWinSamples,
@@ -44,6 +47,8 @@ export interface RecommendInput {
   limit: number;
   pickWeights: PickWeights;
   banWeights: BanWeights;
+  /** ロールごとの担当プレイヤーのプール。渡したロールだけ、プールの要素を計算する。 */
+  pools?: PoolHints;
 }
 
 interface Indexes {
@@ -87,6 +92,7 @@ function rankPicks(
 ): RecommendationCandidate[] {
   const rows = indexes.metaByPosition.get(position) ?? [];
   const candidates: RecommendationCandidate[] = [];
+  const pool = poolIndex(input.pools, position);
   for (const row of rows) {
     if (row.roleRate < MAJOR_ROLE_RATE || excluded.has(row.championId)) continue;
     const parts: Part[] = [];
@@ -100,11 +106,25 @@ function rankPicks(
       parts.push({ factor: "synergy", weight: input.pickWeights.synergy, scored: synergy });
     const pro = proPickScore(indexes, row.championId, position);
     if (pro) parts.push({ factor: "pro", weight: input.pickWeights.pro, scored: pro });
+    if (pool) {
+      const scored = scorePool(pool.get(row.championId) ?? null);
+      parts.push({ factor: "pool", weight: input.pickWeights.pool, scored });
+    }
     const combined = combine(parts, PICK_FACTORS);
     if (!combined) continue;
     candidates.push(toCandidate(row.championId, position, indexes, combined));
   }
   return candidates.sort(byScore).slice(0, input.limit);
+}
+
+/** そのロールのプール。1 件も無ければ(未登録・全て除外)計算しないので null */
+function poolIndex(
+  pools: PoolHints | undefined,
+  position: Position,
+): Map<string, PoolHintEntry> | null {
+  const entries = pools?.[position];
+  if (!entries || entries.length === 0) return null;
+  return new Map(entries.map((entry) => [entry.championId, entry]));
 }
 
 function rankBans(

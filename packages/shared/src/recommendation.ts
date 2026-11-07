@@ -1,7 +1,9 @@
 import { z } from "zod";
 
-import { draftStateSchema } from "./draft.js";
+import { draftStateSchema, ID_MAX_LENGTH } from "./draft.js";
 import { POSITIONS } from "./position.js";
+import type { Position } from "./position.js";
+import { MAX_POOL_ENTRIES } from "./profile.js";
 import { RANK_TIERS } from "./tier.js";
 import { PRESETS } from "./weights.js";
 
@@ -10,8 +12,30 @@ export const MAX_RECOMMENDATION_LIMIT = 20;
 
 const weight = z.number().min(0);
 
+/** 提案に渡すプール 1 件。除外したものは送らない。手動登録は games と winRate が null。 */
+export const poolHintEntrySchema = z.object({
+  championId: z.string().min(1).max(ID_MAX_LENGTH),
+  games: z.number().int().nonnegative().nullable(),
+  winRate: z.number().min(0).max(1).nullable(),
+});
+
+export type PoolHintEntry = z.infer<typeof poolHintEntrySchema>;
+
+/** ロールごとの、そのロールを担当するプレイヤーのプール */
+export const poolHintsSchema = z
+  .object(
+    Object.fromEntries(
+      POSITIONS.map((position) => [position, z.array(poolHintEntrySchema).max(MAX_POOL_ENTRIES)]),
+    ) as Record<Position, z.ZodArray<typeof poolHintEntrySchema>>,
+  )
+  .partial();
+
+export type PoolHints = z.infer<typeof poolHintsSchema>;
+
 export const recommendationRequestSchema = z.object({
   draft: draftStateSchema,
+  /** 渡したロールだけ、プールの要素を計算する。 */
+  pools: poolHintsSchema.optional(),
   preset: z.enum(PRESETS).optional(),
   tier: z.enum(RANK_TIERS).optional(),
   limit: z.number().int().min(1).max(MAX_RECOMMENDATION_LIMIT).optional(),

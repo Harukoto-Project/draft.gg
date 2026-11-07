@@ -3,7 +3,7 @@ export const PRESETS = ["solo", "team"] as const;
 
 export type Preset = (typeof PRESETS)[number];
 
-/** ピックの要素。プールと構成はデータが来るまで計算しない。プロは pro 統計があるとき計算する。 */
+/** ピックの要素。プールはプールが渡されたロール、構成は未実装で計算しない。プロは pro 統計があるとき計算する。 */
 export const PICK_FACTORS = ["meta", "counter", "synergy", "pro", "pool", "composition"] as const;
 
 export type PickFactor = (typeof PICK_FACTORS)[number];

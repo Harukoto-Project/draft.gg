@@ -146,6 +146,37 @@ export function markRoleUncertain(scored: Scored): Scored {
   return { ...scored, reasons };
 }
 
+const POOL_PRIOR_GAMES = 20;
+/** この試合数で習熟度が満点 */
+const POOL_FULL_GAMES = 30;
+const POOL_GAMES_WEIGHT = 0.5;
+const POOL_WIN_WEIGHT = 0.5;
+/** 手動登録(試合数・勝率なし)のスコア */
+const POOL_MANUAL_SCORE = 0.6;
+
+export interface PoolScoreInput {
+  games: number | null;
+  winRate: number | null;
+}
+
+/**
+ * プールに入っていれば習熟度(試合数 0.5 + 勝率 0.5)、入っていなければ 0。
+ * 手動登録は試合数も勝率も無いので固定値にする。
+ */
+export function scorePool(entry: PoolScoreInput | null): Scored {
+  if (!entry) return { score: 0, reasons: ["プール外"], insufficient: false };
+  if (entry.games === null || entry.winRate === null) {
+    return { score: POOL_MANUAL_SCORE, reasons: ["プールに登録済み"], insufficient: false };
+  }
+  const experience = clamp01(entry.games / POOL_FULL_GAMES);
+  const wins = winScore(bayes(entry.winRate, entry.games, POOL_PRIOR_GAMES));
+  return {
+    score: POOL_GAMES_WEIGHT * experience + POOL_WIN_WEIGHT * wins,
+    reasons: [`プール 勝率${formatRate(entry.winRate)}(${formatGames(entry.games)}試合)`],
+    insufficient: false,
+  };
+}
+
 const PRO_PRIOR_GAMES = 30;
 const PRO_MIN_PICKS = 15;
 const PRO_PRESENCE_WEIGHT = 0.6;
