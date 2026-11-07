@@ -10,6 +10,10 @@
       "cache": false,
       "persistent": true
     },
+    "ingest": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
     "typecheck": {
       "dependsOn": ["^build"]
     },

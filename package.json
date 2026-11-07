@@ -6,6 +6,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "ingest": "turbo run ingest --",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "lint": "oxlint",
