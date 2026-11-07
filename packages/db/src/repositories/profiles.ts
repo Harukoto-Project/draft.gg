@@ -142,10 +142,18 @@ export function createProfileStore(db: Database): ProfileStore {
 
     async update(ownerId, id, patch) {
       if (Object.keys(patch).length > 0) {
+        const where = and(eq(playerProfiles.id, id), eq(playerProfiles.ownerId, ownerId));
+        const [current] = await db.select().from(playerProfiles).where(where);
+        // Riot ID かリージョンが変わったら、別のアカウントになるので同期の履歴を戻す
+        // (誤字を直した直後でも、新しい ID で同期できるようにする)
+        const identityChanged =
+          current !== undefined &&
+          ((patch.riotId !== undefined && patch.riotId !== current.riotId) ||
+            (patch.region !== undefined && patch.region !== current.region));
         await db
           .update(playerProfiles)
-          .set(patch)
-          .where(and(eq(playerProfiles.id, id), eq(playerProfiles.ownerId, ownerId)));
+          .set(identityChanged ? { ...patch, syncedAt: null } : patch)
+          .where(where);
       }
       return loadOne(db, ownerId, id);
     },
