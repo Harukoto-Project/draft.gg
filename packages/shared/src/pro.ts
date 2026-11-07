@@ -19,7 +19,7 @@ export const PRO_SCOPE_MAJOR = "major";
 /** この試合数未満のパッチは、直近パッチの候補にしない */
 export const MIN_PRO_GAMES_PER_PATCH = 20;
 
-/** major とリーグ別 scope に含めるパッチ数 */
+/** リーグごとに、major とリーグ別 scope に含めるパッチ数 */
 export const PRO_WINDOW_PATCHES = 2;
 
 /**
@@ -110,6 +110,33 @@ export function selectRecentProPatches(counts: { patch: string; games: number }[
     .map((count) => count.patch)
     .sort(comparePatchDesc)
     .slice(0, PRO_WINDOW_PATCHES);
+}
+
+/**
+ * リーグごとに、試合が 20 件以上ある新しい 2 パッチを選ぶ。
+ * シーズンが終わったリーグ(LCK など)も、そのリーグの最新のパッチで残す。
+ */
+export function selectProWindows(
+  counts: { league: string; patch: string; games: number }[],
+): Map<string, string[]> {
+  const byLeague = new Map<string, { patch: string; games: number }[]>();
+  for (const { league, patch, games } of counts) {
+    const list = byLeague.get(league) ?? [];
+    list.push({ patch, games });
+    byLeague.set(league, list);
+  }
+  const windows = new Map<string, string[]>();
+  for (const [league, list] of byLeague) {
+    const patches = selectRecentProPatches(list);
+    if (patches.length > 0) windows.set(league, patches);
+  }
+  return windows;
+}
+
+/** 窓に含まれるパッチ。リーグを指定すればそのリーグだけ、省けば全リーグの和集合(新しい順) */
+export function windowPatches(windows: Map<string, string[]>, league?: string): string[] {
+  if (league) return windows.get(league) ?? [];
+  return [...new Set([...windows.values()].flat())].sort(comparePatchDesc);
 }
 
 export function proMatchDate(playedAt: Date): string {
