@@ -33,6 +33,8 @@ export function createAuthGateway(db: Database, config: AuthConfig): AuthGateway
       provider: "mysql",
       schema: { user, session, account, verification },
     }),
+    // ログインにしか使わないが、DB が漏れたときのために Discord のトークンは暗号化して保存する
+    account: { encryptOAuthTokens: true },
     socialProviders: {
       discord: {
         clientId: config.discordClientId,

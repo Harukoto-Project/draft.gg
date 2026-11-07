@@ -108,6 +108,16 @@ describe("POST /me/drafts", () => {
     expect(store.create).not.toHaveBeenCalled();
   });
 
+  it("進行ルールと手順が合わない状態は 400", async () => {
+    const { app, store } = appWith();
+    const response = await app.request(
+      "/me/drafts",
+      json("POST", { state: { ...STATE, actions: STATE.actions.slice(0, 3) } }),
+    );
+    expect(response.status).toBe(400);
+    expect(store.create).not.toHaveBeenCalled();
+  });
+
   it("メモが長すぎれば 400", async () => {
     const { app } = appWith();
     const response = await app.request(

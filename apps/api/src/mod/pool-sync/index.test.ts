@@ -140,4 +140,19 @@ describe("createPoolSync", () => {
     await Promise.all([first, second]);
     await expect(sync.fetch({ ...INPUT, roles: [] })).resolves.toEqual([]);
   });
+
+  it("全体の上限(1分に10回)を超えたら busy。1分たてば再び通る", async () => {
+    let at = 1_000_000;
+    const sync = createPoolSync({
+      getSnapshot: () => SNAPSHOT,
+      connect: async () => clientOf([]),
+      now: () => at,
+    });
+
+    for (let i = 0; i < 10; i += 1) await sync.fetch({ ...INPUT, roles: [] });
+    await expect(sync.fetch({ ...INPUT, roles: [] })).rejects.toMatchObject({ code: "busy" });
+
+    at += 60_000;
+    await expect(sync.fetch({ ...INPUT, roles: [] })).resolves.toEqual([]);
+  });
 });
