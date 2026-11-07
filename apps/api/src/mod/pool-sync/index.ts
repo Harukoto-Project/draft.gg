@@ -6,6 +6,10 @@ import type { PoolEntry, Position, RiotRegion, StatsSnapshot } from "@draftgg/sh
 /** 同時に OP.GG へ問い合わせる最大数。超えたら待たせず断る */
 const MAX_CONCURRENT_SYNCS = 2;
 
+/** 全ユーザー合計で、1 分間に OP.GG へ問い合わせる上限。超えたら待たせず断る */
+const MAX_SYNCS_PER_MINUTE = 10;
+const RATE_WINDOW_MS = 60 * 1000;
+
 /** 接続から取得までの上限 */
 const SYNC_TIMEOUT_MS = 45_000;
 
@@ -35,6 +39,8 @@ export interface PoolSyncOptions {
   getSnapshot: () => StatsSnapshot;
   /** テストで差し替える。既定は OP.GG の公式 MCP に接続する */
   connect?: () => Promise<OpggClient>;
+  /** テストで時刻を固定する */
+  now?: () => number;
 }
 
 async function connectClient(): Promise<OpggClient> {
@@ -63,7 +69,10 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
  */
 export function createPoolSync(options: PoolSyncOptions): PoolSync {
   const connect = options.connect ?? connectClient;
+  const now = options.now ?? Date.now;
   let running = 0;
+  /** 直近の問い合わせの開始時刻 */
+  let recent: number[] = [];
 
   return {
     async fetch(input) {
@@ -73,6 +82,10 @@ export function createPoolSync(options: PoolSyncOptions): PoolSync {
       const snapshot = options.getSnapshot();
       if (snapshot.champions.length === 0) throw new PoolSyncError("unavailable");
       if (running >= MAX_CONCURRENT_SYNCS) throw new PoolSyncError("busy");
+      const startedAt = now();
+      recent = recent.filter((at) => startedAt - at < RATE_WINDOW_MS);
+      if (recent.length >= MAX_SYNCS_PER_MINUTE) throw new PoolSyncError("busy");
+      recent.push(startedAt);
 
       running += 1;
       let client: OpggClient | undefined;
