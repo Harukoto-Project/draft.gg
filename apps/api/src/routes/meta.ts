@@ -1,6 +1,5 @@
-import { metaQuerySchema, metaResponseSchema } from "@draftgg/shared";
+import { MAJOR_ROLE_RATE, POSITIONS, metaQuerySchema, metaResponseSchema } from "@draftgg/shared";
 import type { MetaResponse, StatsSnapshot } from "@draftgg/shared";
-import { POSITIONS } from "@draftgg/shared";
 import { Hono } from "hono";
 
 export interface MetaSource {
@@ -19,6 +18,8 @@ export function createMetaRoute(source: MetaSource) {
     const tier = parsed.data.tier ?? snapshot.tier;
     const names = new Map(snapshot.champions.map((champion) => [champion.id, champion.nameJa]));
     const stats = (snapshot.tier === tier ? snapshot.meta : [])
+      // 副ロールの行は、メタ一覧由来の全ランク帯の値のまま残るため返さない(分析済みの主要ロールだけ)
+      .filter((row) => row.roleRate >= MAJOR_ROLE_RATE)
       .filter((row) => parsed.data.position === undefined || row.position === parsed.data.position)
       .map((row) => ({
         ...row,

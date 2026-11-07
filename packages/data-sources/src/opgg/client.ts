@@ -12,7 +12,9 @@ const LANE_META_FIELDS = POSITIONS.map(
 const ANALYSIS_FIELDS = [
   "data.damage_type",
   "data.summary.id",
-  "data.summary.average_stats.{play,win_rate,pick_rate,ban_rate,tier,rank}",
+  // average_stats の試合数・勝率・ティアはチャンピオン全体の値。ロール別は positions[] から取る
+  "data.summary.average_stats.ban_rate",
+  "data.summary.positions[].{name,stats.{play,win_rate,pick_rate,role_rate},stats.tier_data.{tier,rank}}",
   "data.strong_counters[].{champion_id,my_win_rate,play}",
   "data.weak_counters[].{champion_id,my_win_rate,play}",
   "data.synergies",

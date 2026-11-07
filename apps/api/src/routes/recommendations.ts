@@ -9,13 +9,22 @@ import {
 } from "@draftgg/shared";
 import type { StatsSnapshot } from "@draftgg/shared";
 import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
 
 export interface RecommendationSource {
   getSnapshot(): StatsSnapshot;
 }
 
+/** 20 手のドラフトと重みで 4KB 程度。余裕を見て 16KB までにする */
+export const MAX_RECOMMENDATION_BODY_BYTES = 16 * 1024;
+
 export function createRecommendationsRoute(source: RecommendationSource) {
-  return new Hono().post("/", async (c) => {
+  const limit = bodyLimit({
+    maxSize: MAX_RECOMMENDATION_BODY_BYTES,
+    onError: (c) => c.json({ error: "payload_too_large" }, 413),
+  });
+
+  return new Hono().post("/", limit, async (c) => {
     const json: unknown = await c.req.json().catch(() => null);
     const parsed = recommendationRequestSchema.safeParse(json);
     if (!parsed.success) return c.json({ error: "invalid_request" }, 400);

@@ -2,6 +2,7 @@ import { POSITIONS } from "@draftgg/shared";
 import type { ChampionRef, DamageType, Position } from "@draftgg/shared";
 import { z } from "zod";
 
+import { decodeCompact } from "./compact.js";
 import { createNameIndex, createNumericIndex } from "./names.js";
 import type { ChampionAnalysis, LaneMetaRow } from "./types.js";
 
@@ -37,18 +38,25 @@ const synergySchema = z.object({
   score: z.number().finite().optional(),
 });
 
+/** summary.positions[] の1要素。average_stats はチャンピオン全体の値なので、ロール別はここから取る。 */
+const positionStatsSchema = z.object({
+  name: z.string(),
+  stats: z.object({
+    play: z.number().finite(),
+    win_rate: rateSchema,
+    pick_rate: rateSchema,
+    tier_data: z.object({ tier: z.number().int() }),
+  }),
+});
+
 const analysisSchema = z.object({
   data: z.object({
     damage_type: z.string().optional(),
     summary: z.object({
       id: z.number().int(),
-      average_stats: z.object({
-        play: z.number().finite(),
-        win_rate: rateSchema,
-        pick_rate: rateSchema,
-        ban_rate: rateSchema,
-        tier: z.number().int(),
-      }),
+      /** ban_rate はチャンピオン単位(ロールを決める前に BAN されるため) */
+      average_stats: z.object({ ban_rate: rateSchema }),
+      positions: z.array(positionStatsSchema),
     }),
     strong_counters: z.array(counterSchema).optional(),
     weak_counters: z.array(counterSchema).optional(),
@@ -76,10 +84,11 @@ export function extractToolJson(result: unknown): unknown {
   if (!text) {
     throw new Error("OP.GG の応答に本文がありません");
   }
+  // 実際の OP.GG MCP はコンパクト形式で返す。JSON で返ってきた場合も読めるようにしておく
   try {
     return JSON.parse(text) as unknown;
   } catch {
-    throw new Error("OP.GG の応答を JSON として読めません");
+    return decodeCompact(text);
   }
 }
 
@@ -130,8 +139,14 @@ export function parseChampionAnalysis(
     );
   }
 
-  const stats = parsed.data.summary.average_stats;
   const label = expected.championId;
+  const positionStats = parsed.data.summary.positions.find(
+    (entry) => parsePosition(entry.name) === expected.position,
+  );
+  if (!positionStats) {
+    throw new Error(`OP.GG の応答に対象ロールの統計がありません: ${label} ${expected.position}`);
+  }
+  const stats = positionStats.stats;
   const byNumeric = createNumericIndex(catalog);
   const matchups = new Map<string, ChampionAnalysis["matchups"][number]>();
   for (const counter of [
@@ -149,21 +164,26 @@ export function parseChampionAnalysis(
     if (!current || next.games >= current.games) matchups.set(opponent.id, next);
   }
 
-  const synergies: ChampionAnalysis["synergies"] = [];
+  // 保存先の主キー(ally_id, ally_position)で重複を除く。重複があれば試合数が多い方を残す
+  const synergyByKey = new Map<string, ChampionAnalysis["synergies"][number]>();
   for (const entries of Object.values(parsed.data.synergies ?? {})) {
     for (const entry of entries) {
       const ally = byNumeric.get(entry.synergy_champion_id);
       const allyPosition = parsePosition(entry.synergy_position);
       if (!ally || !allyPosition || ally.id === expected.championId) continue;
-      synergies.push({
+      const next = {
         allyId: ally.id,
         allyPosition,
         games: nonNegativeInt(entry.play, label),
         winRate: normalizeRate(entry.win_rate, label),
         score: entry.score ?? 0,
-      });
+      };
+      const key = `${next.allyId}:${next.allyPosition}`;
+      const current = synergyByKey.get(key);
+      if (!current || next.games >= current.games) synergyByKey.set(key, next);
     }
   }
+  const synergies = [...synergyByKey.values()];
 
   const damage = parsed.data.damage_type?.toUpperCase();
   return {
@@ -172,8 +192,8 @@ export function parseChampionAnalysis(
     games: nonNegativeInt(stats.play, label),
     winRate: normalizeRate(stats.win_rate, label),
     pickRate: normalizeRate(stats.pick_rate, label),
-    banRate: normalizeRate(stats.ban_rate, label),
-    tierRank: tierRankOf(stats.tier, label),
+    banRate: normalizeRate(parsed.data.summary.average_stats.ban_rate, label),
+    tierRank: tierRankOf(stats.tier_data.tier, label),
     damageType: (damage && DAMAGE_BY_OPGG[damage]) || null,
     matchups: [...matchups.values()],
     synergies,

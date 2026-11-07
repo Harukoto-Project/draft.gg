@@ -10,12 +10,22 @@ export const SIDES = ["blue", "red"] as const;
 
 export type Side = (typeof SIDES)[number];
 
+/** ランク戦・大会形式のドラフトは最大 20 手(BAN 10 + ピック 10) */
+export const MAX_DRAFT_ACTIONS = 20;
+
+/** DB の varchar(64) に合わせる */
+export const ID_MAX_LENGTH = 64;
+
+const championIdSchema = z.string().min(1).max(ID_MAX_LENGTH);
+/** プレイヤーを指す ID。M2 では中身を使わない */
+const playerRefSchema = z.string().min(1).max(ID_MAX_LENGTH);
+
 export const assignmentSchema = z.object({
-  top: z.string().min(1).nullable(),
-  jungle: z.string().min(1).nullable(),
-  mid: z.string().min(1).nullable(),
-  adc: z.string().min(1).nullable(),
-  support: z.string().min(1).nullable(),
+  top: championIdSchema.nullable(),
+  jungle: championIdSchema.nullable(),
+  mid: championIdSchema.nullable(),
+  adc: championIdSchema.nullable(),
+  support: championIdSchema.nullable(),
 });
 
 export type Assignment = z.infer<typeof assignmentSchema>;
@@ -24,14 +34,14 @@ export const draftActionSchema = z.object({
   step: z.number().int().nonnegative(),
   type: z.enum(["ban", "pick"]),
   side: z.enum(SIDES),
-  championId: z.string().min(1).nullable(),
+  championId: championIdSchema.nullable(),
 });
 
 export const draftStateSchema = z
   .object({
     format: z.enum(DRAFT_FORMATS),
     mySide: z.enum(SIDES),
-    actions: z.array(draftActionSchema),
+    actions: z.array(draftActionSchema).max(MAX_DRAFT_ACTIONS),
     assignments: z.object({
       blue: assignmentSchema,
       red: assignmentSchema,
@@ -45,11 +55,11 @@ export const draftStateSchema = z
     /** チーム時のロールとプレイヤーの対応。M2 の計算では使わない。 */
     team: z
       .object({
-        top: z.string().min(1).optional(),
-        jungle: z.string().min(1).optional(),
-        mid: z.string().min(1).optional(),
-        adc: z.string().min(1).optional(),
-        support: z.string().min(1).optional(),
+        top: playerRefSchema.optional(),
+        jungle: playerRefSchema.optional(),
+        mid: playerRefSchema.optional(),
+        adc: playerRefSchema.optional(),
+        support: playerRefSchema.optional(),
       })
       .optional(),
   })

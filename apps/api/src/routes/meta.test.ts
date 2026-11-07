@@ -57,6 +57,14 @@ describe("GET /meta", () => {
     ]);
   });
 
+  it("ロール未指定でも、主要ロール(ロール割合が下限以上)の行だけを返す", async () => {
+    const app = new Hono().route("/meta", createMetaRoute(source));
+    const response = await app.request("/meta");
+    const body = metaResponseSchema.parse(await response.json());
+
+    expect(body.stats.map((row) => row.position)).toEqual(["mid"]);
+  });
+
   it("未知のロールは 400 を返す", async () => {
     const app = new Hono().route("/meta", createMetaRoute(source));
     const response = await app.request("/meta?position=middle");

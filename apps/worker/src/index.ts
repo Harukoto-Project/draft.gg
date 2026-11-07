@@ -45,8 +45,8 @@ async function shutdown(signal: string): Promise<void> {
   let exitCode = 0;
   try {
     await scheduler.stop();
-    // 再試行の待ち(最大 2 分)で止まらないよう、待ちを中断してから実行中の試行の終了を待つ
-    runner.cancelRetries();
+    // 再試行の待ちと、長いジョブ(opgg-champion は十数分)の実行を中断してから、実行中の試行の終了を待つ
+    runner.abort();
     await runner.drain();
     await close();
   } catch (error) {

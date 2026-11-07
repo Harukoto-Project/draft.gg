@@ -213,7 +213,47 @@ describe("createJobRunner", () => {
     expect(run).toHaveBeenCalledTimes(1);
   });
 
-  it("cancelRetries は再試行の待ちを中断し、以降の再試行をしない", async () => {
+  it("ジョブの maxAttempts はランナーの既定より優先される", async () => {
+    const { store } = createFakeStore();
+    const runner = createJobRunner({
+      store,
+      logger: noopLogger,
+      maxAttempts: 3,
+      sleep: noSleep,
+    });
+    const run = vi.fn(async () => {
+      throw new Error("取得に失敗");
+    });
+
+    const outcome = await runner.run({ ...createJob(run), maxAttempts: 1 });
+
+    expect(outcome).toBe("failed");
+    expect(run).toHaveBeenCalledTimes(1);
+  });
+
+  it("abort は実行中のジョブに signal の中断を伝える", async () => {
+    const { store } = createFakeStore();
+    const runner = createJobRunner({ store, logger: noopLogger, sleep: noSleep });
+    let received: AbortSignal | undefined;
+    const run = vi.fn(async (signal?: AbortSignal) => {
+      received = signal;
+      await new Promise<void>((resolve) => signal?.addEventListener("abort", () => resolve()));
+      throw new Error("停止要求のため中断しました");
+    });
+
+    const pending = runner.run(createJob(run));
+    await vi.waitFor(() => expect(received).toBeDefined());
+    expect(received?.aborted).toBe(false);
+    runner.abort();
+    await runner.drain();
+
+    expect(await pending).toBe("failed");
+    expect(received?.aborted).toBe(true);
+    // 中断後は再試行しない
+    expect(run).toHaveBeenCalledTimes(1);
+  });
+
+  it("abort は再試行の待ちを中断し、以降の再試行をしない", async () => {
     const { store, runs } = createFakeStore();
     // 既定の sleep(abort で中断できる)を使い、長い待ちが中断されることを確認する
     const runner = createJobRunner({ store, logger: noopLogger, baseDelayMs: 60_000 });
@@ -225,7 +265,7 @@ describe("createJobRunner", () => {
     await vi.waitFor(() => expect(runs).toHaveLength(1));
     // 1 回目の失敗の記録後、待ちに入るのを待つ
     await vi.waitFor(() => expect(runs[0]?.status).toBe("failed"));
-    runner.cancelRetries();
+    runner.abort();
     await runner.drain();
 
     expect(await pending).toBe("failed");

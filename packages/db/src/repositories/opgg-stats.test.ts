@@ -6,8 +6,10 @@ import { createDatabase } from "../client.js";
 import {
   MIN_ANALYSES_REQUIRING_PAIRS,
   MIN_META_ROWS_PER_POSITION,
+  MIN_STATS_ROWS,
   buildChampionRateUpsert,
   buildMetaRoleUpsert,
+  pickStatsPatch,
   saveChampionStats,
   saveLaneMeta,
 } from "./opgg-stats.js";
@@ -59,6 +61,40 @@ describe("buildChampionRateUpsert", () => {
     expect(updatePart).toContain("`ban_rate` = values(`ban_rate`)");
     expect(updatePart).toContain("`tier_rank` = values(`tier_rank`)");
     expect(updatePart).not.toContain("role_rate");
+  });
+});
+
+describe("pickStatsPatch", () => {
+  it("件数が足りているパッチのうち最新のものを選ぶ", () => {
+    expect(
+      pickStatsPatch([
+        { patch: "16.21", rows: MIN_STATS_ROWS },
+        { patch: "16.22", rows: MIN_STATS_ROWS + 10 },
+      ]),
+    ).toBe("16.22");
+  });
+
+  it("新パッチの統計がまだ空なら、直前のパッチを使う", () => {
+    expect(
+      pickStatsPatch([
+        { patch: "16.21", rows: MIN_STATS_ROWS },
+        { patch: "16.22", rows: 3 },
+      ]),
+    ).toBe("16.21");
+  });
+
+  it("パッチは文字列ではなく数値として比べる", () => {
+    expect(
+      pickStatsPatch([
+        { patch: "16.9", rows: MIN_STATS_ROWS },
+        { patch: "16.10", rows: MIN_STATS_ROWS },
+      ]),
+    ).toBe("16.10");
+  });
+
+  it("どのパッチも足りなければ null を返す", () => {
+    expect(pickStatsPatch([{ patch: "16.22", rows: 1 }])).toBeNull();
+    expect(pickStatsPatch([])).toBeNull();
   });
 });
 

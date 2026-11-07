@@ -9,7 +9,7 @@ import type {
   StatsSnapshot,
   SynergyStat,
 } from "@draftgg/shared";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, or, sql } from "drizzle-orm";
 import type { AnyMySqlColumn } from "drizzle-orm/mysql-core";
 
 import type { Database } from "../client.js";
@@ -26,6 +26,40 @@ export const MIN_META_ROWS_PER_POSITION = 20;
 export const MIN_ANALYSES_REQUIRING_PAIRS = 10;
 
 const INSERT_CHUNK = 200;
+/** DELETE の WHERE に並べる (チャンピオン, ロール) の組の数 */
+const DELETE_CHUNK = 100;
+
+/** 統計を読むパッチに必要な meta_stats の件数(全ロールが最低件数そろっている目安) */
+export const MIN_STATS_ROWS = MIN_META_ROWS_PER_POSITION * POSITIONS.length;
+
+export interface PatchRowCount {
+  patch: string;
+  rows: number;
+}
+
+/**
+ * 統計を読むパッチを選ぶ。meta_stats の件数が足りているパッチのうち最新のもの。
+ * 新パッチの取り込み直後でまだ統計が空でも、直前のパッチの統計を使い続けられる。
+ */
+export function pickStatsPatch(
+  counts: PatchRowCount[],
+  minRows: number = MIN_STATS_ROWS,
+): string | null {
+  const ready = counts.filter((count) => count.rows >= minRows).map((count) => count.patch);
+  ready.sort(comparePatchDesc);
+  return ready[0] ?? null;
+}
+
+/** "16.22" のようなパッチを、数値として新しい順に並べる */
+function comparePatchDesc(a: string, b: string): number {
+  const left = a.split(".").map(Number);
+  const right = b.split(".").map(Number);
+  for (let index = 0; index < Math.max(left.length, right.length); index += 1) {
+    const diff = (right[index] ?? 0) - (left[index] ?? 0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+}
 
 type Writer = Pick<Database, "insert">;
 
@@ -222,11 +256,36 @@ export async function saveChampionStats(
     for (const chunk of chunks(metaRows, INSERT_CHUNK)) {
       await buildChampionRateUpsert(tx, chunk);
     }
-    // 今回取り直したパッチの対面・シナジーは入れ替える。失敗したらトランザクションごと戻る。
-    await tx.delete(matchups).where(and(eq(matchups.patch, input.patch), eq(matchups.tier, tier)));
-    await tx
-      .delete(synergies)
-      .where(and(eq(synergies.patch, input.patch), eq(synergies.tier, tier)));
+    // 今回取れたチャンピオン×ロールの対面・シナジーだけを入れ替える。
+    // 取得に失敗してスキップした分は、前回の値を残す。失敗したらトランザクションごと戻る。
+    for (const chunk of chunks(input.rows, DELETE_CHUNK)) {
+      await tx
+        .delete(matchups)
+        .where(
+          and(
+            eq(matchups.patch, input.patch),
+            eq(matchups.tier, tier),
+            or(
+              ...chunk.map((row) =>
+                and(eq(matchups.championId, row.championId), eq(matchups.position, row.position)),
+              ),
+            ),
+          ),
+        );
+      await tx
+        .delete(synergies)
+        .where(
+          and(
+            eq(synergies.patch, input.patch),
+            eq(synergies.tier, tier),
+            or(
+              ...chunk.map((row) =>
+                and(eq(synergies.championId, row.championId), eq(synergies.position, row.position)),
+              ),
+            ),
+          ),
+        );
+    }
     for (const chunk of chunks(matchupRows, INSERT_CHUNK)) {
       await tx.insert(matchups).values(chunk);
     }
@@ -264,8 +323,18 @@ export async function listMajorRoles(
     .filter((row) => row.roleRate >= minRoleRate);
 }
 
+export async function resolveStatsPatch(db: Database, tier: RankTier): Promise<string | null> {
+  const rows = await db
+    .select({ patch: metaStats.patch, rows: sql<string | number>`count(*)` })
+    .from(metaStats)
+    .where(eq(metaStats.tier, tier))
+    .groupBy(metaStats.patch);
+  return pickStatsPatch(rows.map((row) => ({ patch: row.patch, rows: Number(row.rows) })));
+}
+
+/** 提案・メタ API が読む統計。現在パッチの統計が空のあいだは、直前のパッチの統計を返す。 */
 export async function loadStatsSnapshot(db: Database, tier: RankTier): Promise<StatsSnapshot> {
-  const patch = await getCurrentPatch(db);
+  const patch = await resolveStatsPatch(db, tier);
   if (!patch) {
     return { patch: null, tier, champions: [], meta: [], matchups: [], synergies: [] };
   }
