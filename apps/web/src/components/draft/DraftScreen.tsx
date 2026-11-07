@@ -1,11 +1,10 @@
 "use client";
 
-import { championIdsInUse } from "@draftgg/shared";
 import type { Champion } from "@draftgg/shared";
 import { useMemo } from "react";
 
-import { ChampionGrid } from "@/components/champion/ChampionGrid";
 import { DraftBans } from "@/components/draft/DraftBans";
+import { DraftCenter } from "@/components/draft/DraftCenter";
 import { DraftPicks } from "@/components/draft/DraftPicks";
 import { DraftScreenSkeleton } from "@/components/draft/DraftScreenSkeleton";
 import { DraftToolbar } from "@/components/draft/DraftToolbar";
@@ -58,15 +57,10 @@ function DraftWorkspace() {
             championsById={championsById}
             className="lg:col-start-3 lg:row-start-2"
           />
-          <div className="col-span-2 flex h-[28rem] min-h-0 flex-col overflow-hidden bg-card p-3 lg:col-span-1 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-auto">
-            <div className="min-h-0 flex-1">
-              <ChampionGrid
-                taken={championIdsInUse(draft.state)}
-                canPick={draft.activeStep !== null}
-                onPick={draft.pickChampion}
-              />
-            </div>
-          </div>
+          <DraftCenter
+            championsById={championsById}
+            className="col-span-2 h-[36rem] lg:col-span-1 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-auto"
+          />
         </div>
       </div>
     </div>

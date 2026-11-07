@@ -51,5 +51,35 @@
     "emptyCatalog": "チャンピオンがまだ取り込まれていません。取り込みが終わってから再読み込みしてください。",
     "slotLabel": "{side}の{type}{index}",
     "assignRole": "{slot} {champion}を{role}にする"
+  },
+  "recommendation": {
+    "title": "提案",
+    "view": "表示する内容",
+    "tabChampions": "チャンピオン",
+    "tabSuggestions": "提案",
+    "tabPick": "ピック",
+    "tabBan": "BAN",
+    "myRole": "自分のロール",
+    "myRoleTeam": "チーム",
+    "myRoleTeamHint": "ロールを決めず、味方の空いているロールすべてに候補を出します",
+    "score": "スコア",
+    "loadError": "提案を読み込めませんでした。",
+    "retry": "再読み込み",
+    "empty": "統計がまだ取り込まれていないため、提案を出せません。",
+    "noPickRole": "このロールに出せる候補がありません",
+    "noPicks": "味方のロールがすべて埋まっています",
+    "noBans": "BANの候補がありません",
+    "candidateLabel": "{champion}、{role}、スコア{score}",
+    "patch": "パッチ{version}の統計",
+    "factor": {
+      "meta": "メタ",
+      "counter": "カウンター",
+      "synergy": "シナジー",
+      "pro": "プロ",
+      "pool": "プール",
+      "composition": "構成",
+      "threat": "脅威"
+    },
+    "disclaimer": "統計から計算した判断材料で、勝敗を保証するものではありません"
   }
 }
