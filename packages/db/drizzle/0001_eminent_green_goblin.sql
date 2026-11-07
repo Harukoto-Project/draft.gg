@@ -34,5 +34,5 @@ CREATE TABLE `synergies` (
 	`games` int NOT NULL,
 	`win_rate` decimal(6,4) NOT NULL,
 	`score` decimal(10,4) NOT NULL,
-	CONSTRAINT `synergies_patch_tier_champion_id_position_ally_id_ally_position_pk` PRIMARY KEY(`patch`,`tier`,`champion_id`,`position`,`ally_id`,`ally_position`)
+	CONSTRAINT `synergies_pk` PRIMARY KEY(`patch`,`tier`,`champion_id`,`position`,`ally_id`,`ally_position`)
 ) DEFAULT CHARSET=utf8mb4;
