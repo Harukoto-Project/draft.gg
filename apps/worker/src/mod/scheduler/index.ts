@@ -10,9 +10,10 @@ export interface Scheduler {
   stop(): Promise<void>;
 }
 
-/** ジョブを cron で常駐実行する。runOnStart のジョブは起動直後にも1回実行する。 */
+/** ジョブを cron で常駐実行する。runOnStart のジョブは起動直後にも1回実行する。schedule が null のジョブは登録しない。 */
 export function startScheduler(jobs: Job[], runner: JobRunner, logger: Logger): Scheduler {
-  const tasks = jobs.map((job) => {
+  const tasks = jobs.flatMap((job) => {
+    if (job.schedule === null) return [];
     if (!validate(job.schedule)) {
       throw new Error(`cron 式が不正です: ${job.name} (${job.schedule})`);
     }
@@ -31,7 +32,7 @@ export function startScheduler(jobs: Job[], runner: JobRunner, logger: Logger): 
     logger("info", "job scheduled", { job: job.name, schedule: job.schedule, timezone: TIMEZONE });
 
     if (job.runOnStart) trigger();
-    return task;
+    return [task];
   });
 
   return {

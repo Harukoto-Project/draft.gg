@@ -15,6 +15,7 @@ import type { AnyMySqlColumn } from "drizzle-orm/mysql-core";
 import type { Database } from "../client.js";
 import { champions, matchups, metaStats, synergies } from "../schema/index.js";
 import { getCurrentPatch } from "./champion-master.js";
+import { loadMajorProStats } from "./pro.js";
 
 /** 1ロールあたりの最低件数。不完全なメタ一覧で前回の統計を上書きしない。 */
 export const MIN_META_ROWS_PER_POSITION = 20;
@@ -336,10 +337,10 @@ export async function resolveStatsPatch(db: Database, tier: RankTier): Promise<s
 export async function loadStatsSnapshot(db: Database, tier: RankTier): Promise<StatsSnapshot> {
   const patch = await resolveStatsPatch(db, tier);
   if (!patch) {
-    return { patch: null, tier, champions: [], meta: [], matchups: [], synergies: [] };
+    return { patch: null, tier, champions: [], meta: [], matchups: [], synergies: [], pro: [] };
   }
 
-  const [championRows, metaRows, matchupRows, synergyRows] = await Promise.all([
+  const [championRows, metaRows, matchupRows, synergyRows, pro] = await Promise.all([
     db.select().from(champions),
     db
       .select()
@@ -353,6 +354,7 @@ export async function loadStatsSnapshot(db: Database, tier: RankTier): Promise<S
       .select()
       .from(synergies)
       .where(and(eq(synergies.patch, patch), eq(synergies.tier, tier))),
+    loadMajorProStats(db),
   ]);
 
   const championList: ChampionRef[] = championRows.map((row) => ({
@@ -393,6 +395,7 @@ export async function loadStatsSnapshot(db: Database, tier: RankTier): Promise<S
       winRate: asNumber(row.winRate),
       score: asNumber(row.score),
     })),
+    pro,
   };
 }
 

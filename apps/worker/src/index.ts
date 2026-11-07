@@ -32,6 +32,19 @@ jobs = createJobs(db, {
       })(),
     );
   },
+  onProImported() {
+    const leaguepedia = jobs.find((job) => job.name === "pro-leaguepedia");
+    const aggregate = jobs.find((job) => job.name === "pro-aggregate");
+    runner.track(
+      (async () => {
+        if (leaguepedia) await runner.run(leaguepedia);
+        // 順番が取れなくても、Oracle's Elixir の試合だけで集計する
+        if (aggregate) await runner.run(aggregate);
+      })(),
+    );
+  },
+  leaguepedia: config.leaguepedia,
+  oraclesFileUrl: config.oraclesFileUrl,
 });
 const scheduler = startScheduler(jobs, runner, log);
 log("info", "worker started");

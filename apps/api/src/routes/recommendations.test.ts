@@ -41,6 +41,7 @@ const source: RecommendationSource = {
     ],
     matchups: [],
     synergies: [],
+    pro: [],
   }),
 };
 

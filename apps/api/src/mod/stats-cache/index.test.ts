@@ -10,6 +10,7 @@ const snapshot: StatsSnapshot = {
   meta: [],
   matchups: [],
   synergies: [],
+  pro: [],
 };
 
 describe("createStatsCache", () => {

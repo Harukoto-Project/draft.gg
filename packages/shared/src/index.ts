@@ -3,6 +3,7 @@ export * from "./champion.js";
 export * from "./draft.js";
 export * from "./labels.js";
 export * from "./position.js";
+export * from "./pro.js";
 export * from "./recommendation.js";
 export * from "./stats.js";
 export * from "./tier.js";

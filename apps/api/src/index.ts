@@ -1,5 +1,11 @@
 import { serve } from "@hono/node-server";
-import { createDatabase, getCurrentPatch, listChampions, loadStatsSnapshot } from "@draftgg/db";
+import {
+  createDatabase,
+  getCurrentPatch,
+  listChampions,
+  loadProChampions,
+  loadStatsSnapshot,
+} from "@draftgg/db";
 import { DEFAULT_RANK_TIER } from "@draftgg/shared";
 import { Hono } from "hono";
 
@@ -22,6 +28,7 @@ const app = new Hono().route(
     },
     meta: stats,
     recommendations: stats,
+    pro: { load: (query) => loadProChampions(db, query) },
   }),
 );
 

@@ -8,6 +8,7 @@ const EMPTY_SNAPSHOT: StatsSnapshot = {
   meta: [],
   matchups: [],
   synergies: [],
+  pro: [],
 };
 
 export interface StatsCache {

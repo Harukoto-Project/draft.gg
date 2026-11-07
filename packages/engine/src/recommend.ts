@@ -21,6 +21,7 @@ import type {
   Side,
   StatsSnapshot,
   SynergyStat,
+  ProStat,
 } from "@draftgg/shared";
 
 import {
@@ -30,6 +31,8 @@ import {
   round4,
   scoreBanMeta,
   scorePickMeta,
+  scoreProBan,
+  scoreProPick,
   scoreWinSamples,
 } from "./score.js";
 import type { Scored } from "./score.js";
@@ -49,6 +52,8 @@ interface Indexes {
   metaByPosition: Map<Position, MetaStat[]>;
   matchups: Map<string, MatchupStat>;
   synergies: Map<string, SynergyStat>;
+  pro: Map<string, ProStat>;
+  proByChampion: Map<string, ProStat[]>;
 }
 
 interface Part {
@@ -93,6 +98,8 @@ function rankPicks(
     const synergy = synergyScore(input.draft, indexes, row.championId, position);
     if (synergy)
       parts.push({ factor: "synergy", weight: input.pickWeights.synergy, scored: synergy });
+    const pro = proPickScore(indexes, row.championId, position);
+    if (pro) parts.push({ factor: "pro", weight: input.pickWeights.pro, scored: pro });
     const combined = combine(parts, PICK_FACTORS);
     if (!combined) continue;
     candidates.push(toCandidate(row.championId, position, indexes, combined));
@@ -118,6 +125,8 @@ function rankBans(
     const best = bestBanMeta(rows);
     if (!best) continue;
     const parts: Part[] = [{ factor: "meta", weight: input.banWeights.meta, scored: best.scored }];
+    const pro = proBanScore(indexes, championId);
+    if (pro) parts.push({ factor: "pro", weight: input.banWeights.pro, scored: pro });
     const threat = banThreat(input, indexes, championId);
     if (threat) parts.push({ factor: "counter", weight: input.banWeights.counter, scored: threat });
     const combined = combine(parts, BAN_FACTORS);
@@ -125,6 +134,27 @@ function rankBans(
     candidates.push(toCandidate(championId, best.position, indexes, combined));
   }
   return candidates.sort(byScore).slice(0, input.limit);
+}
+
+function proPickScore(indexes: Indexes, championId: string, position: Position): Scored | null {
+  const row = indexes.pro.get(metaKey(championId, position));
+  if (!row) return null;
+  return scoreProPick(row);
+}
+
+function proBanScore(indexes: Indexes, championId: string): Scored | null {
+  const rows = indexes.proByChampion.get(championId);
+  if (!rows || rows.length === 0) return null;
+  const games = rows[0]?.games ?? 0;
+  if (games <= 0) return null;
+  const picks = rows.reduce((sum, row) => sum + row.picks, 0);
+  const bans = rows.reduce((max, row) => Math.max(max, row.bans), 0);
+  return scoreProBan({
+    games,
+    picks,
+    bans,
+    presence: Math.min(1, (picks + bans) / games),
+  });
 }
 
 function counterScore(
@@ -319,7 +349,15 @@ function buildIndexes(snapshot: StatsSnapshot): Indexes {
       row,
     ]),
   );
-  return { names, meta, metaByPosition, matchups, synergies };
+  const pro = new Map<string, ProStat>();
+  const proByChampion = new Map<string, ProStat[]>();
+  for (const row of snapshot.pro) {
+    pro.set(metaKey(row.championId, row.position), row);
+    const rows = proByChampion.get(row.championId) ?? [];
+    rows.push(row);
+    proByChampion.set(row.championId, rows);
+  }
+  return { names, meta, metaByPosition, matchups, synergies, pro, proByChampion };
 }
 
 function excludedChampions(draft: DraftState): Set<string> {
