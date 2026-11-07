@@ -1,6 +1,7 @@
 import type { PoolEntry, Profile, ProfileInput, ProfilePatch } from "@draftgg/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { TEAMS_KEY } from "@/hooks/use-teams";
 import {
   createProfile,
   deleteProfile,
@@ -56,10 +57,12 @@ export function useDeleteProfile() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteProfile(id),
-    onSuccess: (_result, id) => {
+    onSuccess: async (_result, id) => {
       queryClient.setQueryData<Profile[]>(PROFILES_KEY, (current) =>
         current?.filter((item) => item.id !== id),
       );
+      // チームの割り当ても一緒に消えるので、チームを取り直す
+      await queryClient.invalidateQueries({ queryKey: TEAMS_KEY });
     },
   });
 }

@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import {
   createDatabase,
   createProfileStore,
+  createTeamStore,
   getCurrentPatch,
   listChampions,
   loadProChampions,
@@ -37,6 +38,7 @@ const app = new Hono().route(
       store: createProfileStore(db),
       sync: createPoolSync({ getSnapshot: () => stats.getSnapshot() }),
     },
+    teams: { store: createTeamStore(db) },
   }),
 );
 
