@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { M_PLUS_2 } from "next/font/google";
+import { Noto_Sans_JP } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { AppShell } from "@/components/layout/AppShell";
@@ -9,7 +9,7 @@ import ja from "@/messages/ja.json";
 
 import "./globals.css";
 
-const sans = M_PLUS_2({
+const sans = Noto_Sans_JP({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
