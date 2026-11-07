@@ -34,6 +34,8 @@ export interface DraftContextValue {
   chooseSide: (side: Side) => void;
   /** 自分のロール。null でチーム向け(ロールを決めない) */
   chooseMyPosition: (position: Position | null) => void;
+  /** 保存したドラフトを、いまのドラフトとして読み込む */
+  loadDraft: (state: DraftState) => void;
   reset: () => void;
 }
 
@@ -85,6 +87,10 @@ export function DraftProvider({ children }: { children: ReactNode }) {
       chooseMyPosition: (position) => {
         const next = setMyPosition(state, position);
         if (next !== state) writeDraft(next);
+      },
+      loadDraft: (next) => {
+        writeDraft(next);
+        setSelection(null);
       },
       reset: () => {
         writeDraft(createEmptyDraft({ format: state.format, mySide: state.mySide, me: state.me }));
