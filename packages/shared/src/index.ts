@@ -12,6 +12,7 @@ export * from "./profile.js";
 export * from "./recommendation.js";
 export * from "./saved-draft.js";
 export * from "./stats.js";
+export * from "./status.js";
 export * from "./team.js";
 export * from "./tier.js";
 export * from "./weights.js";

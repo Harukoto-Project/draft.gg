@@ -16,6 +16,8 @@ import { createProRoute } from "./pro.js";
 import type { ProReader } from "./pro.js";
 import { createRecommendationsRoute } from "./recommendations.js";
 import type { RecommendationSource } from "./recommendations.js";
+import { createStatusRoute } from "./status.js";
+import type { StatusReader } from "./status.js";
 import { createTeamsRoute } from "./teams.js";
 
 export interface RouteDeps {
@@ -28,6 +30,7 @@ export interface RouteDeps {
   profiles: { store: ProfileStore; sync: PoolSync };
   teams: { store: TeamStore };
   drafts: { store: DraftStore };
+  status: StatusReader;
 }
 
 // 1エンドポイント群 = 1ファイル。新しいルートはここに登録する。
@@ -39,6 +42,7 @@ export function createRoutes(deps: RouteDeps) {
     .route("/me/profiles", createProfilesRoute({ auth: deps.auth, ...deps.profiles }))
     .route("/me/teams", createTeamsRoute({ auth: deps.auth, ...deps.teams }))
     .route("/me/drafts", createDraftsRoute({ auth: deps.auth, ...deps.drafts }))
+    .route("/status", createStatusRoute(deps.status))
     .route("/champions", createChampionsRoute(deps.champions))
     .route("/meta", createMetaRoute(deps.meta))
     .route("/pro", createProRoute(deps.pro))
