@@ -33,15 +33,14 @@ export function DraftSide({
     activeAction?.side === side && activeAction.type === "ban" && activeAction.championId !== null;
 
   return (
-    <section className="flex min-h-0 min-w-0 flex-col gap-3 overflow-y-auto" aria-label={label}>
+    <section
+      className={cn(
+        "flex h-full min-h-0 min-w-0 flex-col gap-3 overflow-y-auto rounded-md border-l-4 bg-card p-3",
+        side === "blue" ? "border-side-blue" : "border-side-red",
+      )}
+      aria-label={label}
+    >
       <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
-        <span
-          className={cn(
-            "h-4 w-1",
-            side === "blue" ? "bg-blue-700 dark:bg-blue-400" : "bg-red-700 dark:bg-red-400",
-          )}
-          aria-hidden
-        />
         {label}
         {state.mySide === side ? (
           <span className="text-xs font-normal text-muted-foreground">{ja.draft.mine}</span>
@@ -67,7 +66,7 @@ export function DraftSide({
           <button
             type="button"
             onClick={clearActive}
-            className="w-fit cursor-pointer text-xs text-zinc-700 underline-offset-2 hover:underline dark:text-zinc-300"
+            className="w-fit cursor-pointer text-xs text-foreground underline-offset-2 hover:underline"
           >
             {ja.draft.clear}
           </button>
@@ -92,9 +91,7 @@ export function DraftSide({
                   className="size-10 shrink-0"
                 />
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <p className="truncate text-sm text-zinc-700 dark:text-zinc-300">
-                    {champion?.nameJa ?? ""}
-                  </p>
+                  <p className="truncate text-sm text-foreground">{champion?.nameJa ?? ""}</p>
                   <Select
                     value={position ?? "unset"}
                     disabled={!championId}
@@ -122,7 +119,7 @@ export function DraftSide({
                     <button
                       type="button"
                       onClick={clearActive}
-                      className="w-fit cursor-pointer text-xs text-zinc-700 underline-offset-2 hover:underline dark:text-zinc-300"
+                      className="w-fit cursor-pointer text-xs text-foreground underline-offset-2 hover:underline"
                     >
                       {ja.draft.clear}
                     </button>

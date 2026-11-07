@@ -36,9 +36,9 @@ export function DraftSlot({
       onClick={onSelect}
       className={cn(
         "relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden rounded-sm border bg-background transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-        active && "border-foreground bg-neutral-200 dark:bg-neutral-600",
-        !active && suggested && "border-neutral-500",
-        !active && !suggested && "border-dashed border-neutral-300 dark:border-neutral-600",
+        active && "border-gold bg-gold/15",
+        !active && suggested && "border-gold/70",
+        !active && !suggested && "border-dashed border-border",
         className,
       )}
     >

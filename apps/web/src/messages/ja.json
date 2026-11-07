@@ -4,8 +4,8 @@
     "description": "League of LegendsのBAN・ピックを補助するツール"
   },
   "nav": {
-    "draft": "ドラフト",
-    "openMenu": "メニューを開く"
+    "label": "ページ",
+    "draft": "ドラフト"
   },
   "header": {
     "theme": "表示テーマ",

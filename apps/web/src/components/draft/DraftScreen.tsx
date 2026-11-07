@@ -47,8 +47,8 @@ function DraftWorkspace() {
             <DraftSide side="red" championsById={championsById} />
           </div>
         </div>
-        <div className="flex min-h-0 flex-col gap-2 lg:col-start-2 lg:row-start-1">
-          <p className="shrink-0 text-sm font-medium text-foreground" aria-live="polite">
+        <div className="flex min-h-0 flex-col gap-3 overflow-hidden rounded-md bg-card p-3 lg:col-start-2 lg:row-start-1">
+          <p className="shrink-0 text-sm text-foreground" aria-live="polite">
             {turnHint(draft.state)}
           </p>
           <div className="min-h-0 flex-1">

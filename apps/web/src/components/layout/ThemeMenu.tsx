@@ -30,7 +30,12 @@ export function ThemeMenu() {
       <Tooltip>
         <TooltipTrigger asChild>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label={ja.header.theme}>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={ja.header.theme}
+              className="text-masthead-foreground hover:bg-white/10 hover:text-masthead-foreground"
+            >
               <Sun className="dark:hidden" />
               <Moon className="hidden dark:block" />
             </Button>
