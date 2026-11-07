@@ -37,7 +37,6 @@
     "ban": "BAN",
     "pick": "ピック",
     "clear": "外す",
-    "role": "ロール",
     "roleFilter": "ロールで絞り込む",
     "roleAll": "全て",
     "roleFilterUnavailable": "ロールの統計が未取得のため、絞り込めません",
