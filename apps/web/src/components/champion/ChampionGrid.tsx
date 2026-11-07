@@ -6,9 +6,12 @@ import { useMemo, useState } from "react";
 
 import { ChampionGridSkeleton } from "@/components/champion/ChampionGridSkeleton";
 import { ChampionIcon } from "@/components/champion/ChampionIcon";
+import { RoleFilter } from "@/components/champion/RoleFilter";
+import type { RoleFilterValue } from "@/components/champion/RoleFilter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useChampions } from "@/hooks/use-champions";
+import { useRoleChampions } from "@/hooks/use-role-champions";
 import { formatMessage } from "@/lib/formatMessage";
 import { cn } from "@/lib/utils";
 import ja from "@/messages/ja.json";
@@ -73,23 +76,30 @@ function ChampionResults({
   canPick: boolean;
   onPick: (championId: string) => void;
 }) {
+  const [role, setRole] = useState<RoleFilterValue>("all");
+  const roleChampions = useRoleChampions().data ?? null;
   const visible = useMemo(
     () =>
       champions
         .filter((champion) => championMatchesQuery(champion, search))
+        .filter(
+          (champion) =>
+            role === "all" || roleChampions === null || !!roleChampions.get(role)?.has(champion.id),
+        )
         .sort((left, right) => left.nameJa.localeCompare(right.nameJa, "ja")),
-    [champions, search],
+    [champions, search, role, roleChampions],
   );
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2">
+        <RoleFilter value={role} onChange={setRole} disabled={roleChampions === null} />
         <Input
           value={search}
           onChange={(event) => onSearch(event.target.value)}
           placeholder={ja.draft.searchPlaceholder}
           aria-label={ja.draft.searchPlaceholder}
-          className="max-w-sm"
+          className="max-w-xs min-w-40 flex-1"
         />
         <p className="shrink-0 text-xs text-muted-foreground">
           {formatMessage(ja.draft.searchCount, { count: String(visible.length) })}

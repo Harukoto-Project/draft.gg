@@ -9,7 +9,7 @@ export function DraftScreenSkeleton() {
         <Skeleton className="h-6 w-24" />
         <Skeleton className="h-4 w-16" />
       </div>
-      <div className="grid min-h-0 flex-1 grid-cols-2 gap-3 px-3 pb-3 lg:grid-cols-[16rem_minmax(0,1fr)_16rem] lg:grid-rows-[auto_minmax(0,1fr)]">
+      <div className="grid min-h-0 flex-1 grid-cols-2 gap-3 px-3 pb-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)_minmax(0,1fr)] lg:grid-rows-[auto_minmax(0,1fr)]">
         <BansSkeleton className="lg:col-start-1 lg:row-start-1" />
         <Skeleton className="col-span-2 h-10 lg:col-span-1 lg:col-start-2 lg:row-start-1" />
         <BansSkeleton className="lg:col-start-3 lg:row-start-1" />
@@ -40,7 +40,7 @@ function PicksSkeleton({ className }: { className?: string }) {
   return (
     <div className={cn("hidden flex-col gap-2 bg-card p-3 lg:flex", className)}>
       {Array.from({ length: 5 }, (_, index) => (
-        <Skeleton key={index} className="h-16 w-full" />
+        <Skeleton key={index} className="h-[4.5rem] w-full" />
       ))}
     </div>
   );

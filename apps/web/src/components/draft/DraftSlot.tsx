@@ -43,7 +43,29 @@ export function DraftSlot({
       )}
     >
       {champion ? (
-        <ChampionIcon champion={champion} />
+        <>
+          <span className={cn("absolute inset-0", turn.type === "ban" && "grayscale")}>
+            <ChampionIcon champion={champion} />
+          </span>
+          {turn.type === "ban" ? (
+            <svg
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+              className="absolute inset-0 size-full text-side-red"
+            >
+              <line
+                x1="0"
+                y1="100"
+                x2="100"
+                y2="0"
+                stroke="currentColor"
+                strokeWidth="3"
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+          ) : null}
+        </>
       ) : (
         <span className="text-xs text-muted-foreground">{index}</span>
       )}

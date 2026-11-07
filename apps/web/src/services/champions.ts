@@ -11,6 +11,11 @@ export async function loadChampions(): Promise<ChampionsResponse> {
   return championsResponseSchema.parse(body);
 }
 
+/** ピック枠に使う横長のスプラッシュ画像(バージョンに依存しない) */
+export function championSplashUrl(champion: Pick<Champion, "id">): string {
+  return `https://ddragon.leagueoflegends.com/cdn/img/champion/centered/${champion.id}_0.jpg`;
+}
+
 export function championImageUrl(champion: Pick<Champion, "id" | "imageVersion">): string {
   return `https://ddragon.leagueoflegends.com/cdn/${champion.imageVersion}/img/champion/${champion.id}.png`;
 }
