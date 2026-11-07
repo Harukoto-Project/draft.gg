@@ -1,5 +1,6 @@
 import { ChampionGridSkeleton } from "@/components/champion/ChampionGridSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export function DraftScreenSkeleton() {
   return (
@@ -8,28 +9,38 @@ export function DraftScreenSkeleton() {
         <Skeleton className="h-6 w-24" />
         <Skeleton className="h-4 w-16" />
       </div>
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 p-3 lg:grid-cols-[16rem_minmax(0,1fr)_16rem]">
-        <SideSkeleton />
-        <div className="rounded-md bg-card p-3">
+      <div className="grid min-h-0 flex-1 grid-cols-2 gap-3 px-3 pb-3 lg:grid-cols-[16rem_minmax(0,1fr)_16rem] lg:grid-rows-[auto_minmax(0,1fr)]">
+        <BansSkeleton className="lg:col-start-1 lg:row-start-1" />
+        <Skeleton className="col-span-2 h-10 lg:col-span-1 lg:col-start-2 lg:row-start-1" />
+        <BansSkeleton className="lg:col-start-3 lg:row-start-1" />
+        <PicksSkeleton className="lg:col-start-1 lg:row-start-2" />
+        <div className="col-span-2 rounded-md bg-card p-3 lg:col-span-1 lg:col-start-2 lg:row-start-2">
           <ChampionGridSkeleton />
         </div>
-        <SideSkeleton />
+        <PicksSkeleton className="lg:col-start-3 lg:row-start-2" />
       </div>
     </div>
   );
 }
 
-function SideSkeleton() {
+function BansSkeleton({ className }: { className?: string }) {
   return (
-    <div className="flex flex-col gap-3 rounded-md border-l-4 border-side-blue bg-card p-3">
+    <div className={cn("flex flex-col gap-2 rounded-md bg-card p-3", className)}>
       <Skeleton className="h-5 w-16" />
       <div className="grid grid-cols-5 gap-1">
         {Array.from({ length: 5 }, (_, index) => (
           <Skeleton key={index} className="aspect-square w-full" />
         ))}
       </div>
-      {Array.from({ length: 3 }, (_, index) => (
-        <Skeleton key={index} className="h-10 w-full" />
+    </div>
+  );
+}
+
+function PicksSkeleton({ className }: { className?: string }) {
+  return (
+    <div className={cn("hidden flex-col gap-2 rounded-md bg-card p-3 lg:flex", className)}>
+      {Array.from({ length: 5 }, (_, index) => (
+        <Skeleton key={index} className="h-16 w-full" />
       ))}
     </div>
   );

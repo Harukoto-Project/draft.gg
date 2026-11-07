@@ -5,8 +5,9 @@ import type { Champion, DraftState, DraftTurn } from "@draftgg/shared";
 import { useMemo } from "react";
 
 import { ChampionGrid } from "@/components/champion/ChampionGrid";
+import { DraftBans } from "@/components/draft/DraftBans";
+import { DraftPicks } from "@/components/draft/DraftPicks";
 import { DraftScreenSkeleton } from "@/components/draft/DraftScreenSkeleton";
-import { DraftSide } from "@/components/draft/DraftSide";
 import { DraftToolbar } from "@/components/draft/DraftToolbar";
 import { DraftProvider } from "@/contexts/DraftContext";
 import { useChampions } from "@/hooks/use-champions";
@@ -38,26 +39,43 @@ function DraftWorkspace() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <DraftToolbar patch={champions.data?.patch ?? null} />
-      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] gap-3 p-3 lg:grid-cols-[16rem_minmax(0,1fr)_16rem] lg:grid-rows-1">
-        <div className="grid max-h-[42svh] min-h-0 grid-cols-2 gap-3 overflow-hidden lg:contents lg:max-h-none">
-          <div className="min-h-0 lg:col-start-1 lg:row-start-1">
-            <DraftSide side="blue" championsById={championsById} />
-          </div>
-          <div className="min-h-0 lg:col-start-3 lg:row-start-1">
-            <DraftSide side="red" championsById={championsById} />
-          </div>
-        </div>
-        <div className="flex min-h-0 flex-col gap-3 overflow-hidden rounded-md bg-card p-3 lg:col-start-2 lg:row-start-1">
-          <p className="shrink-0 text-sm text-foreground" aria-live="polite">
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
+        <div className="grid grid-cols-2 gap-3 lg:h-full lg:grid-cols-[16rem_minmax(0,1fr)_16rem] lg:grid-rows-[auto_minmax(0,1fr)]">
+          <DraftBans
+            side="blue"
+            championsById={championsById}
+            className="order-1 lg:order-none lg:col-start-1 lg:row-start-1"
+          />
+          <p
+            className="order-3 col-span-2 flex items-center justify-center rounded-md bg-card px-3 py-2 text-center text-base font-semibold text-gold lg:order-none lg:col-span-1 lg:col-start-2 lg:row-start-1"
+            aria-live="polite"
+          >
             {turnHint(draft.state)}
           </p>
-          <div className="min-h-0 flex-1">
-            <ChampionGrid
-              taken={championIdsInUse(draft.state)}
-              canPick={draft.activeStep !== null}
-              onPick={draft.pickChampion}
-            />
+          <DraftBans
+            side="red"
+            championsById={championsById}
+            className="order-2 lg:order-none lg:col-start-3 lg:row-start-1"
+          />
+          <DraftPicks
+            side="blue"
+            championsById={championsById}
+            className="order-4 lg:order-none lg:col-start-1 lg:row-start-2"
+          />
+          <div className="order-6 col-span-2 flex h-[28rem] min-h-0 flex-col overflow-hidden rounded-md bg-card p-3 lg:order-none lg:col-span-1 lg:col-start-2 lg:row-start-2 lg:h-auto">
+            <div className="min-h-0 flex-1">
+              <ChampionGrid
+                taken={championIdsInUse(draft.state)}
+                canPick={draft.activeStep !== null}
+                onPick={draft.pickChampion}
+              />
+            </div>
           </div>
+          <DraftPicks
+            side="red"
+            championsById={championsById}
+            className="order-5 lg:order-none lg:col-start-3 lg:row-start-2"
+          />
         </div>
       </div>
     </div>
