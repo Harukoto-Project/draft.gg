@@ -8,6 +8,7 @@ export interface NavItem {
 export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/draft", label: ja.nav.draft },
   { href: "/pro", label: ja.nav.pro },
+  { href: "/profiles", label: ja.nav.profiles },
 ];
 
 export function navItemForPath(pathname: string): NavItem | undefined {
