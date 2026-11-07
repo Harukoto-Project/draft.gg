@@ -15,7 +15,7 @@ export function AppHeader() {
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-6 bg-masthead px-4 text-masthead-foreground">
-      <Link href="/draft" className="font-semibold text-gold">
+      <Link href="/" className="font-semibold text-gold">
         {ja.app.title}
       </Link>
       <nav aria-label={ja.nav.label} className="flex h-full items-stretch gap-4">

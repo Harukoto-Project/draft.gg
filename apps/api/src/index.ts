@@ -6,6 +6,7 @@ import {
   createTeamStore,
   getCurrentPatch,
   listChampions,
+  listLastSuccessfulRuns,
   loadProChampions,
   loadStatsSnapshot,
 } from "@draftgg/db";
@@ -42,6 +43,10 @@ const app = new Hono().route(
     },
     teams: { store: createTeamStore(db) },
     drafts: { store: createDraftStore(db) },
+    status: {
+      getCurrentPatch: () => getCurrentPatch(db),
+      listLastSuccessfulRuns: (jobs) => listLastSuccessfulRuns(db, jobs),
+    },
   }),
 );
 

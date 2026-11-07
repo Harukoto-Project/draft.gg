@@ -165,6 +165,34 @@
       "retryAfter": "あと{minutes}分ほど待ってください。"
     }
   },
+  "home": {
+    "title": "ドラフトの判断を、データで支える",
+    "description": "LoLのBANとピックを入力すると、メタ・対面・シナジー・プロの採用傾向・プールから候補を出します。",
+    "startTitle": "始める",
+    "continueHint": "入力中のドラフトがある場合は、その続きから始まります。",
+    "solo": {
+      "title": "ソロ",
+      "description": "自分のロールを選んで、自分の枠に合う候補を見ます。"
+    },
+    "team": {
+      "title": "チーム",
+      "description": "ロールを決めずに、味方の空いているロールすべての候補を見ます。",
+      "start": "チームで始める"
+    },
+    "soloRole": "{role}で始める",
+    "statusTitle": "データの更新状況",
+    "statusLoadError": "更新状況を読み込めませんでした。",
+    "statusRetry": "再読み込み",
+    "patch": "現在のパッチ",
+    "patchUnknown": "未取得",
+    "notUpdated": "未更新",
+    "jobs": {
+      "ddragon": "チャンピオン一覧",
+      "opgg-meta": "メタ統計(ロール別)",
+      "opgg-champion": "対面・シナジー",
+      "pro-aggregate": "プロ統計"
+    }
+  },
   "drafts": {
     "save": "保存",
     "saved": "保存済み",
