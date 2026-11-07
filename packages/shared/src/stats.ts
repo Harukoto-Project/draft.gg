@@ -1,5 +1,6 @@
 import type { DamageType } from "./champion.js";
 import type { Position } from "./position.js";
+import type { ProStat } from "./pro.js";
 import type { RankTier } from "./tier.js";
 
 /** 提案計算に渡す、現在パッチの統計。率は 0〜1。 */
@@ -10,6 +11,8 @@ export interface StatsSnapshot {
   meta: MetaStat[];
   matchups: MatchupStat[];
   synergies: SynergyStat[];
+  /** scope major のプロ統計。未集計なら空 */
+  pro: ProStat[];
 }
 
 export interface ChampionRef {

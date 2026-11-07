@@ -84,6 +84,7 @@ function createInput(snapshot: Partial<StatsSnapshot>, draft = createDraft()): R
       meta: [],
       matchups: [],
       synergies: [],
+      pro: [],
       ...snapshot,
     },
     preset: "solo",
@@ -306,5 +307,95 @@ describe("recommend", () => {
     expect(result.picks.find((group) => group.position === "mid")?.candidates[0]?.championId).toBe(
       "Ahri",
     );
+  });
+
+  it("プロのプレゼンスと勝率が高いチャンピオンを上にし、理由にプロを出す", () => {
+    const result = recommend(
+      createInput({
+        meta: [
+          metaRow("Ahri", "mid", { winRate: 0.5, tierRank: 3 }),
+          metaRow("Veigar", "mid", { winRate: 0.5, tierRank: 3 }),
+        ],
+        pro: [
+          {
+            championId: "Ahri",
+            position: "mid",
+            games: 100,
+            picks: 40,
+            bans: 30,
+            presence: 0.7,
+            winRate: 0.6,
+            earlyPickRate: null,
+          },
+        ],
+      }),
+    );
+
+    const candidates = result.picks[0]?.candidates ?? [];
+    expect(candidates.map((candidate) => candidate.championId).slice(0, 2)).toEqual([
+      "Ahri",
+      "Veigar",
+    ]);
+    expect(candidates[0]?.factors.pro).toBeGreaterThan(0);
+    expect(candidates[0]?.reasons.some((reason) => reason.startsWith("プロ プレゼンス"))).toBe(
+      true,
+    );
+    expect(candidates[0]?.reasons).not.toContain("サンプル不足");
+    expect(candidates[1]?.factors.pro).toBeUndefined();
+  });
+
+  it("プロのピックが15未満ならサンプル不足と出す", () => {
+    const result = recommend(
+      createInput({
+        meta: [metaRow("Ahri", "mid")],
+        pro: [
+          {
+            championId: "Ahri",
+            position: "mid",
+            games: 40,
+            picks: 5,
+            bans: 2,
+            presence: 0.175,
+            winRate: 0.8,
+            earlyPickRate: null,
+          },
+        ],
+      }),
+    );
+
+    expect(result.picks[0]?.candidates[0]?.reasons).toContain("サンプル不足");
+  });
+
+  it("BANのプロはロールをまたいだピック数とBAN数でプレゼンスを出す", () => {
+    const result = recommend(
+      createInput({
+        meta: [metaRow("Ahri", "mid"), metaRow("Veigar", "mid")],
+        pro: [
+          {
+            championId: "Ahri",
+            position: "mid",
+            games: 100,
+            picks: 10,
+            bans: 40,
+            presence: 0.5,
+            winRate: 0.5,
+            earlyPickRate: null,
+          },
+          {
+            championId: "Ahri",
+            position: "support",
+            games: 100,
+            picks: 5,
+            bans: 40,
+            presence: 0.45,
+            winRate: 0.4,
+            earlyPickRate: null,
+          },
+        ],
+      }),
+    );
+
+    const ahri = result.bans.find((candidate) => candidate.championId === "Ahri");
+    expect(ahri?.reasons).toContain("プロ プレゼンス55.0%(ピック15・BAN40 / 100試合)");
   });
 });

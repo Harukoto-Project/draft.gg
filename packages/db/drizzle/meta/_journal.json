@@ -15,6 +15,13 @@
       "when": 1794009936438,
       "tag": "0001_eminent_green_goblin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1794012608750,
+      "tag": "0002_pro_games",
+      "breakpoints": true
     }
   ]
 }

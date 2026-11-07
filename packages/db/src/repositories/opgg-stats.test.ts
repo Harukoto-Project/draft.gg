@@ -1,6 +1,6 @@
 import { POSITIONS } from "@draftgg/shared";
 import type { MetaStat } from "@draftgg/shared";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
 
 import { createDatabase } from "../client.js";
 import {
@@ -9,6 +9,7 @@ import {
   MIN_STATS_ROWS,
   buildChampionRateUpsert,
   buildMetaRoleUpsert,
+  loadProStatsForSnapshot,
   pickStatsPatch,
   saveChampionStats,
   saveLaneMeta,
@@ -131,5 +132,37 @@ describe("saveChampionStats", () => {
     await expect(saveChampionStats(connection.db, { patch: "16.22", rows })).rejects.toThrow(
       "対面とシナジー",
     );
+  });
+});
+
+describe("loadProStatsForSnapshot", () => {
+  it("失敗したときは空配列にして、メタの読み込みは失敗させない", async () => {
+    const onError = vi.fn();
+    const error = new Error("no table");
+    await expect(
+      loadProStatsForSnapshot(async () => {
+        throw error;
+      }, onError),
+    ).resolves.toEqual([]);
+    expect(onError).toHaveBeenCalledWith(error);
+  });
+
+  it("読めた統計はそのまま返す", async () => {
+    const stat = {
+      championId: "Ahri",
+      position: "mid" as const,
+      games: 20,
+      picks: 4,
+      bans: 1,
+      presence: 0.25,
+      winRate: 0.5,
+      earlyPickRate: null,
+    };
+    await expect(
+      loadProStatsForSnapshot(
+        async () => [stat],
+        () => {},
+      ),
+    ).resolves.toEqual([stat]);
   });
 });

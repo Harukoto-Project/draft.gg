@@ -145,3 +145,48 @@ export function markRoleUncertain(scored: Scored): Scored {
   if (scored.insufficient) reasons.push("サンプル不足");
   return { ...scored, reasons };
 }
+
+const PRO_PRIOR_GAMES = 30;
+const PRO_MIN_PICKS = 15;
+const PRO_PRESENCE_WEIGHT = 0.6;
+const PRO_WIN_WEIGHT = 0.4;
+
+export interface ProScoreInput {
+  presence: number;
+  picks: number;
+  bans: number;
+  games: number;
+  winRate?: number | null;
+}
+
+/** ピックのプロはプレゼンス 0.6 + 勝率 0.4。ピック 15 未満はサンプル不足 */
+export function scoreProPick(input: ProScoreInput): Scored | null {
+  if (input.games <= 0) return null;
+  const presenceScore = clamp01(input.presence);
+  const detail = proDetail(input);
+  if (input.picks <= 0 || input.winRate === null || input.winRate === undefined) {
+    return { score: presenceScore, reasons: [detail, "サンプル不足"], insufficient: true };
+  }
+  const smoothed =
+    (input.winRate * input.picks + PRIOR_WIN_RATE * PRO_PRIOR_GAMES) /
+    (input.picks + PRO_PRIOR_GAMES);
+  const score = PRO_PRESENCE_WEIGHT * presenceScore + PRO_WIN_WEIGHT * winScore(smoothed);
+  const reasons = [`${detail} 勝率${formatRate(input.winRate)}`];
+  const insufficient = input.picks < PRO_MIN_PICKS;
+  if (insufficient) reasons.push("サンプル不足");
+  return { score, reasons, insufficient };
+}
+
+/** BAN のプロはプレゼンスだけ。ロールをまたいだピック数と BAN 数で渡す */
+export function scoreProBan(input: ProScoreInput): Scored | null {
+  if (input.games <= 0) return null;
+  return {
+    score: clamp01(input.presence),
+    reasons: [proDetail(input)],
+    insufficient: false,
+  };
+}
+
+function proDetail(input: ProScoreInput): string {
+  return `プロ プレゼンス${formatRate(input.presence)}(ピック${formatGames(input.picks)}・BAN${formatGames(input.bans)} / ${formatGames(input.games)}試合)`;
+}

@@ -36,6 +36,7 @@ const source: MetaSource = {
     ],
     matchups: [],
     synergies: [],
+    pro: [],
   }),
 };
 
