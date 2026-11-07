@@ -9,3 +9,4 @@ export * from "./pro-champion-stats.js";
 export * from "./pro-game-actions.js";
 export * from "./pro-games.js";
 export * from "./synergies.js";
+export * from "./teams.js";

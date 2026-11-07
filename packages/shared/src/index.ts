@@ -11,5 +11,6 @@ export * from "./pro.js";
 export * from "./profile.js";
 export * from "./recommendation.js";
 export * from "./stats.js";
+export * from "./team.js";
 export * from "./tier.js";
 export * from "./weights.js";

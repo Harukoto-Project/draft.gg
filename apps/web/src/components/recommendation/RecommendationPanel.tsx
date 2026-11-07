@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { CandidateCard } from "@/components/recommendation/CandidateCard";
 import { MyRolePicker } from "@/components/recommendation/MyRolePicker";
 import { PlayerPicker } from "@/components/recommendation/PlayerPicker";
+import { TeamPicker } from "@/components/recommendation/TeamPicker";
 import { RoleIcon } from "@/components/role/RoleIcon";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,8 +16,9 @@ import { useDraft } from "@/hooks/use-draft";
 import { useMe } from "@/hooks/use-me";
 import { useProfiles } from "@/hooks/use-profiles";
 import { useRecommendations } from "@/hooks/use-recommendations";
+import { useTeams } from "@/hooks/use-teams";
 import { formatMessage } from "@/lib/formatMessage";
-import { buildPoolHints } from "@/lib/poolHints";
+import { buildPoolHints, buildTeamPoolHints } from "@/lib/poolHints";
 import ja from "@/messages/ja.json";
 
 type View = "pick" | "ban";
@@ -36,14 +38,22 @@ export function RecommendationPanel({
   const profiles = useProfiles(Boolean(me.data?.user));
   const [playerId, setPlayerId] = useState<string | null>(null);
   const player = profiles.data?.find((profile) => profile.id === playerId);
+  const teams = useTeams(Boolean(me.data?.user));
+  const [teamId, setTeamId] = useState<string | null>(null);
+  const team = teams.data?.find((item) => item.id === teamId);
+  const solo = state.me !== null;
   const pools = useMemo(
-    () => buildPoolHints(player, state.me?.position ?? null),
-    [player, state.me?.position],
+    () =>
+      solo
+        ? buildPoolHints(player, state.me?.position ?? null)
+        : buildTeamPoolHints(team, profiles.data ?? []),
+    [solo, player, team, profiles.data, state.me?.position],
   );
   const query = useRecommendations(state, ready, pools);
   const [view, setView] = useState<View>("pick");
-  // プールはソロ(自分のロールを選んだとき)だけ使う
-  const showPlayerPicker = state.me !== null && (profiles.data?.length ?? 0) > 0;
+  // ソロ(自分のロールを選んだとき)はプレイヤー、チーム(選んでいないとき)はチームのプールを使う
+  const showPlayerPicker = solo && (profiles.data?.length ?? 0) > 0;
+  const showTeamPicker = !solo && (teams.data?.length ?? 0) > 0;
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
@@ -55,6 +65,9 @@ export function RecommendationPanel({
             value={player?.id ?? null}
             onChange={setPlayerId}
           />
+        ) : null}
+        {showTeamPicker ? (
+          <TeamPicker teams={teams.data ?? []} value={team?.id ?? null} onChange={setTeamId} />
         ) : null}
         <ToggleGroup
           type="single"

@@ -7,7 +7,8 @@
     "label": "ページ",
     "draft": "ドラフト",
     "pro": "プロ統計",
-    "profiles": "プール"
+    "profiles": "プール",
+    "teams": "チーム"
   },
   "header": {
     "theme": "表示テーマ",
@@ -164,6 +165,45 @@
       "retryAfter": "あと{minutes}分ほど待ってください。"
     }
   },
+  "teams": {
+    "title": "チーム",
+    "description": "5人のプレイヤーをロールに割り当てて、チームとして登録します。ドラフト画面でチームを選ぶと、ロールごとにプレイヤーのプールを使った提案が出ます。",
+    "loginRequired": "チームの登録にはログインが必要です。",
+    "loginDisabled": "ログイン機能が設定されていないため、チームは使えません。",
+    "loadError": "チームを読み込めませんでした。",
+    "retry": "再読み込み",
+    "listLabel": "チーム一覧",
+    "empty": "チームがまだ登録されていません。",
+    "add": "チームを追加",
+    "noSelection": "チームを選ぶか、追加してください。",
+    "noProfiles": "チームに入れるプレイヤーがいません。先にプレイヤーを登録してください。",
+    "goProfiles": "プールの画面へ",
+    "form": {
+      "createTitle": "チームを追加",
+      "editTitle": "チームの情報",
+      "name": "チーム名",
+      "members": "ロールの割り当て",
+      "unassigned": "未割り当て",
+      "memberLabel": "{role}のプレイヤー",
+      "save": "保存",
+      "create": "追加する",
+      "cancel": "キャンセル",
+      "delete": "削除",
+      "deleteTitle": "チームを削除しますか",
+      "deleteDescription": "「{name}」を削除します。プレイヤーとプールは残ります。",
+      "deleteConfirm": "削除する",
+      "errorName": "チーム名を1〜50文字で入力してください。"
+    },
+    "errors": {
+      "unknown": "うまくいきませんでした。時間をおいてもう一度お試しください。",
+      "unauthorized": "ログインの有効期限が切れました。もう一度ログインしてください。",
+      "invalid_request": "入力内容を確認してください。同じプレイヤーを複数のロールには割り当てられません。",
+      "team_limit": "登録できるチームの上限に達しています。",
+      "not_found": "チームが見つかりません。削除された可能性があります。",
+      "unknown_profile": "存在しないプレイヤーが含まれています。画面を読み込み直してください。",
+      "payload_too_large": "送る内容が大きすぎます。"
+    }
+  },
   "recommendation": {
     "title": "提案",
     "view": "表示する内容",
@@ -175,6 +215,8 @@
     "myRoleTeam": "チーム",
     "player": "プレイヤー",
     "playerNone": "プールを使わない",
+    "team": "チーム",
+    "teamNone": "プールを使わない",
     "myRoleTeamHint": "ロールを決めず、味方の空いているロールすべてに候補を出します",
     "score": "スコア",
     "loadError": "提案を読み込めませんでした。",
