@@ -26,6 +26,7 @@ const app = new Hono().route(
   "/api",
   createRoutes({
     auth: config.auth ? createAuthGateway(db, config.auth) : null,
+    allowedOrigin: config.auth?.baseUrl ?? null,
     champions: {
       getCurrentPatch: () => getCurrentPatch(db),
       listChampions: () => listChampions(db),

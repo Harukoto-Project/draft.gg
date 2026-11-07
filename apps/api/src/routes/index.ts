@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 
 import type { ProfileStore } from "@draftgg/db";
+import { requireSameOrigin } from "../mod/auth/csrf.js";
 import type { AuthGateway } from "../mod/auth/index.js";
 import type { PoolSync } from "../mod/pool-sync/index.js";
 import { createAuthRoute } from "./auth.js";
@@ -19,6 +20,8 @@ import type { RecommendationSource } from "./recommendations.js";
 export interface RouteDeps {
   /** null のときはログインなしで動く */
   auth: AuthGateway | null;
+  /** 変更系の `/me/*` に許す Origin(サイト自身)。認証が無効なら null */
+  allowedOrigin: string | null;
   champions: ChampionsReader;
   meta: MetaSource;
   recommendations: RecommendationSource;
@@ -29,6 +32,7 @@ export interface RouteDeps {
 // 1エンドポイント群 = 1ファイル。新しいルートはここに登録する。
 export function createRoutes(deps: RouteDeps) {
   return new Hono()
+    .use("/me/*", requireSameOrigin(deps.allowedOrigin))
     .route("/health", health)
     .route("/auth", createAuthRoute(deps.auth))
     .route("/me", createMeRoute(deps.auth))
