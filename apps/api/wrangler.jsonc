@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "draftgg-api",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-11-08",
+  // mysql2 と Better Auth が Node.js の API を使う
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true },
+  },
+  // id は仮の値。デプロイ前に `wrangler hyperdrive create` で発行した id(秘密ではない)に差し替える。
+  // ローカルの `wrangler dev` は id を使わず、環境変数
+  // CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE の接続文字列で DB に直接つなぐ。
+  "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "00000000000000000000000000000000" }],
+  // ログイン用の値は `wrangler secret put <名前>` で設定する(ファイルには書かない)。
+  // 公開 URL は未決のため BETTER_AUTH_URL も同じ方法で設定する。型生成と起動時の警告のために名前だけ宣言する。
+  "secrets": {
+    "required": [
+      "BETTER_AUTH_URL",
+      "BETTER_AUTH_SECRET",
+      "DISCORD_CLIENT_ID",
+      "DISCORD_CLIENT_SECRET",
+    ],
+  },
+}

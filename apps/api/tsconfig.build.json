@@ -3,5 +3,7 @@
   "compilerOptions": {
     "outDir": "dist"
   },
-  "exclude": ["src/**/*.test.ts"]
+  // Node の常駐サーバーのビルド。Workers の入口は wrangler が直接バンドルする
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts", "src/worker.ts"]
 }
