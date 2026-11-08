@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "draftgg-web",
+  // /api を api の Worker へ中継するため、OpenNext の Worker を包んだ自前の Worker を使う
+  "main": "cloudflare/worker.ts",
+  "compatibility_date": "2026-11-08",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true },
+  },
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".open-next/assets",
+  },
+  "services": [{ "binding": "API", "service": "draftgg-api" }],
+}
