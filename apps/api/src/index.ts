@@ -1,23 +1,11 @@
 import { serve } from "@hono/node-server";
-import {
-  createDatabase,
-  createProfileStore,
-  createDraftStore,
-  createTeamStore,
-  getCurrentPatch,
-  listChampions,
-  listLastSuccessfulRuns,
-  loadProChampions,
-  loadStatsSnapshot,
-} from "@draftgg/db";
+import { createDatabase, loadStatsSnapshot } from "@draftgg/db";
 import { DEFAULT_RANK_TIER } from "@draftgg/shared";
-import { Hono } from "hono";
 
-import { createAuthGateway } from "./mod/auth/index.js";
+import { createApp } from "./mod/app/index.js";
 import { loadConfig } from "./mod/config/index.js";
 import { createPoolSync } from "./mod/pool-sync/index.js";
 import { createStatsCache } from "./mod/stats-cache/index.js";
-import { createRoutes } from "./routes/index.js";
 
 const config = loadConfig();
 const { db, close } = createDatabase(config.databaseUrl);
@@ -25,35 +13,11 @@ const stats = createStatsCache(() => loadStatsSnapshot(db, DEFAULT_RANK_TIER));
 await stats.refresh();
 stats.start();
 
-const app = new Hono().route(
-  "/api",
-  createRoutes({
-    auth: config.auth ? createAuthGateway(db, config.auth) : null,
-    allowedOrigin: config.auth?.baseUrl ?? null,
-    champions: {
-      getCurrentPatch: () => getCurrentPatch(db),
-      listChampions: () => listChampions(db),
-    },
-    meta: stats,
-    recommendations: stats,
-    pro: { load: (query) => loadProChampions(db, query) },
-    profiles: {
-      store: createProfileStore(db),
-      sync: createPoolSync({ getSnapshot: () => stats.getSnapshot() }),
-    },
-    teams: { store: createTeamStore(db) },
-    drafts: { store: createDraftStore(db) },
-    status: {
-      getCurrentPatch: () => getCurrentPatch(db),
-      listLastSuccessfulRuns: (jobs) => listLastSuccessfulRuns(db, jobs),
-    },
-  }),
-);
-
-// 想定外のエラーは内容を返さず、ログにだけ残す
-app.onError((error, c) => {
-  console.log(JSON.stringify({ level: "error", msg: "request failed", error: error.message }));
-  return c.json({ error: "internal_error" }, 500);
+const app = createApp({
+  db,
+  auth: config.auth,
+  stats,
+  poolSync: createPoolSync({ getSnapshot: () => stats.getSnapshot() }),
 });
 
 const server = serve({ fetch: app.fetch, hostname: config.host, port: config.port }, (info) => {

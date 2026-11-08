@@ -1,7 +1,7 @@
 import { DEFAULT_RANK_TIER } from "@draftgg/shared";
 import type { StatsSnapshot } from "@draftgg/shared";
 
-const EMPTY_SNAPSHOT: StatsSnapshot = {
+export const EMPTY_SNAPSHOT: StatsSnapshot = {
   patch: null,
   tier: DEFAULT_RANK_TIER,
   champions: [],

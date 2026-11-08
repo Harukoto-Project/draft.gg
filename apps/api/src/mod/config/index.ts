@@ -53,7 +53,11 @@ const AUTH_ENV_KEYS = [
   "DISCORD_CLIENT_SECRET",
 ] as const;
 
-function parseAuth(env: NodeJS.ProcessEnv): AuthConfig | null {
+/** 環境変数(Node の process.env、Workers の env)から読める最小の形 */
+export type EnvSource = Record<string, string | undefined>;
+
+/** ログインの設定を環境変数から読む。4つとも空なら null(ログインなし) */
+export function loadAuthConfig(env: EnvSource): AuthConfig | null {
   const values = AUTH_ENV_KEYS.map((key) => env[key] ?? "");
   const missing = AUTH_ENV_KEYS.filter((_, index) => values[index] === "");
   if (missing.length === AUTH_ENV_KEYS.length) return null;
@@ -82,7 +86,7 @@ function parseAuth(env: NodeJS.ProcessEnv): AuthConfig | null {
   return { baseUrl: origin, secret, discordClientId, discordClientSecret };
 }
 
-export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
+export function loadConfig(env: EnvSource = process.env): ApiConfig {
   const databaseUrl = env.DATABASE_URL;
   if (!databaseUrl) {
     throw new Error("DATABASE_URL が設定されていません(.env を確認してください)");
@@ -91,6 +95,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
     host: parseHost(env.API_HOST),
     port: parsePort(env.API_PORT),
     databaseUrl,
-    auth: parseAuth(env),
+    auth: loadAuthConfig(env),
   };
 }

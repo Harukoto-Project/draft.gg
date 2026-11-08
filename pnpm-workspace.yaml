@@ -3,5 +3,7 @@ packages:
   - packages/*
 
 # Vitest が使う esbuild のバイナリ取得。未承認のままだと pnpm 12 の install が失敗する。
+# workerd は wrangler(Cloudflare Workers のローカル実行・デプロイ)が使うランタイムのバイナリ取得。
 allowBuilds:
   esbuild: true
+  workerd: true
