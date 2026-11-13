@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useChampions } from "@/hooks/use-champions";
 import { useRoleChampions } from "@/hooks/use-role-champions";
+import { registerChampionSearch } from "@/lib/championSearchFocus";
 import { formatMessage } from "@/lib/formatMessage";
+import { modifierKeyLabel } from "@/lib/platform";
 import { cn } from "@/lib/utils";
 import ja from "@/messages/ja.json";
 
@@ -93,10 +95,25 @@ function ChampionResults({
       <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2">
         <RoleFilter value={role} onChange={setRole} disabled={roleChampions === null} />
         <Input
+          ref={registerChampionSearch}
           value={search}
           onChange={(event) => onSearch(event.target.value)}
-          placeholder={ja.draft.searchPlaceholder}
+          onKeyDown={(event) => {
+            // 日本語入力の変換確定の Enter では、ピックしない
+            if (event.nativeEvent.isComposing) return;
+            if (event.key === "Enter") {
+              const first = visible.find((champion) => !taken.has(champion.id));
+              if (first && canPick) {
+                onPick(first.id);
+                onSearch("");
+              }
+            } else if (event.key === "Escape" && search) {
+              onSearch("");
+            }
+          }}
+          placeholder={`${ja.draft.searchPlaceholder} (${modifierKeyLabel()}K)`}
           aria-label={ja.draft.searchPlaceholder}
+          aria-keyshortcuts="Control+K Meta+K"
           className="max-w-xs min-w-40 flex-1"
         />
         <p className="shrink-0 text-xs text-muted-foreground">

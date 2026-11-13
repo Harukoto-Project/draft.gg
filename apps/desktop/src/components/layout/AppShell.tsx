@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 
 import { AppWindow, AppWindowContent } from "@/components/ballmac/app-window";
-import { AppFooter } from "@/components/layout/AppFooter";
+import { AppStatusBar } from "@/components/layout/AppStatusBar";
 import { AppTitleBar } from "@/components/layout/AppTitleBar";
 import { useAppWindow } from "@/hooks/use-app-window";
+import { useGlobalShortcuts } from "@/hooks/use-global-shortcuts";
 import { useSnapLayoutTarget } from "@/hooks/use-snap-layout-target";
 
 /**
@@ -13,6 +14,7 @@ import { useSnapLayoutTarget } from "@/hooks/use-snap-layout-target";
 export function AppShell({ children }: { children: ReactNode }) {
   const { maximized, onClose, onMinimize, onMaximize } = useAppWindow();
   useSnapLayoutTarget();
+  useGlobalShortcuts();
 
   return (
     <AppWindow
@@ -25,7 +27,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <AppTitleBar />
       <AppWindowContent className="flex flex-col overflow-hidden">
         <main className="flex min-h-0 flex-1 flex-col">{children}</main>
-        <AppFooter />
+        <AppStatusBar />
       </AppWindowContent>
     </AppWindow>
   );
