@@ -47,6 +47,7 @@ pub fn run() {
             commands::profiles::update_profile,
             commands::profiles::delete_profile,
             commands::profiles::set_pool,
+            commands::profiles::apply_pool_sync,
             commands::teams::list_teams,
             commands::teams::create_team,
             commands::teams::update_team,

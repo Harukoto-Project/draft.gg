@@ -33,6 +33,18 @@ pub fn delete_profile(storage: State<'_, Storage>, id: String) -> Result<(), Str
         .map_err(|error| error.to_string())
 }
 
+/// api から取った OP.GG 由来のプールを反映する(手動の項目と除外の設定は残る)
+#[tauri::command]
+pub fn apply_pool_sync(
+    storage: State<'_, Storage>,
+    id: String,
+    entries: Vec<PoolEntry>,
+) -> Result<Profile, String> {
+    storage
+        .apply_pool_sync(&id, entries)
+        .map_err(|error| error.to_string())
+}
+
 #[tauri::command]
 pub fn set_pool(
     storage: State<'_, Storage>,

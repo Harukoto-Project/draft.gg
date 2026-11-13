@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fs;
 use std::io;
 use std::path::PathBuf;
@@ -110,6 +111,24 @@ impl Storage {
         })
     }
 
+    /// OP.GG から取り直したプールを反映する。手動で足したものは残し、OP.GG 由来は入れ替える
+    ///
+    /// 同じチャンピオン × ロールが手動にもあれば手動を優先し、除外の指定は引き続き出てくるものに引き継ぐ。
+    /// 手動と合わせて 100 件を超える分は捨てる(TS 版の `mergeSyncedPool` と同じ)。
+    pub fn apply_pool_sync(
+        &self,
+        id: &str,
+        synced: Vec<PoolEntry>,
+    ) -> Result<Profile, StorageError> {
+        self.mutate(|data| {
+            let profile = find_mut(&mut data.profiles, id, |profile| &profile.id)?;
+            let pool = merge_synced_pool(&profile.pool, synced);
+            validate::pool(&pool)?;
+            profile.pool = pool;
+            profile.synced_at = Some(Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true));
+            Ok(profile.clone())
+        })
+    }
     // ---- チーム ----
 
     pub fn list_teams(&self) -> Vec<Team> {
@@ -267,4 +286,34 @@ fn save(path: &PathBuf, data: &UserData) -> io::Result<()> {
     let temporary = path.with_extension("tmp");
     fs::write(&temporary, text)?;
     fs::rename(&temporary, path)
+}
+
+fn merge_synced_pool(existing: &[PoolEntry], synced: Vec<PoolEntry>) -> Vec<PoolEntry> {
+    let key = |entry: &PoolEntry| (entry.champion_id.clone(), entry.position);
+    let manual: Vec<PoolEntry> = existing
+        .iter()
+        .filter(|entry| entry.source == PoolSource::Manual)
+        .cloned()
+        .collect();
+    let manual_keys: HashSet<_> = manual.iter().map(key).collect();
+    let previously_excluded: HashSet<_> = existing
+        .iter()
+        .filter(|entry| entry.source == PoolSource::Opgg && entry.excluded)
+        .map(key)
+        .collect();
+
+    let from_opgg = synced
+        .into_iter()
+        .filter(|entry| !manual_keys.contains(&key(entry)))
+        .map(|mut entry| {
+            entry.source = PoolSource::Opgg;
+            entry.excluded = previously_excluded.contains(&key(&entry));
+            entry
+        });
+
+    manual
+        .into_iter()
+        .chain(from_opgg)
+        .take(MAX_POOL_ENTRIES)
+        .collect()
 }
