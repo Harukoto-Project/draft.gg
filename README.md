@@ -2,14 +2,14 @@
 
 # Draft.GG
 
-League of Legendsのドラフト(BAN / ピック)を補助するWebツール。<br>
+League of Legendsのドラフト(BAN / ピック)を補助するデスクトップアプリ(Windows / macOS)。<br>
 統計サイトの数値とプロ試合のピック・BANを組み合わせ、「次に何をピック / BANすべきか」を理由付きで提案します。
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D24-339933.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)
 
-[概要](#概要) · [主な機能](#主な機能) · [仕組み](#仕組み) · [セットアップ](#セットアップ) · [設定](#設定) · [開発](#開発) · [貢献](#貢献) · [ライセンス](#ライセンス)
+[概要](#概要) · [主な機能](#主な機能) · [インストール](#インストール) · [仕組み](#仕組み) · [セットアップ](#セットアップ) · [設定](#設定) · [開発](#開発) · [貢献](#貢献) · [ライセンス](#ライセンス)
 
 [日本語](README.md) · [English](README.en.md) · [한국어](README.ko.md)
 
@@ -22,7 +22,7 @@ League of Legendsのドラフト(BAN / ピック)を補助するWebツール。<
 Draft.GGは、サモナーズリフト(5v5)のドラフトを補助するツールです。自チームと相手チームのBAN・ピックを手動で入力すると、現在の状況に合わせてピックとBANの候補を提案します。
 
 - ソロ / デュオ(ランク戦)と、5人チーム(クラッシュ・スクリム・大会)の両方を想定しています。チームでは1人が操作し、画面を共有する使い方です。
-- 入力はWebでの手動入力のみです。LoLクライアントとの連携は行いません。
+- 入力は手動のみです。LoLクライアントとの連携は行いません。
 - 勝敗を断定するものではありません。判断材料として、数値と理由を示します。
 
 ## 主な機能
@@ -46,7 +46,7 @@ Draft.GGは、サモナーズリフト(5v5)のドラフトを補助するツー�
 | プール     | プレイヤーの得意なチャンピオン                          |
 | 構成       | 味方のダメージ種別(AD / AP)の偏りとフロントラインの有無 |
 
-試合数が少ない要素は、理由に「サンプル不足」と表示します。重みは設定画面(`/settings`)で調整でき、ブラウザに保存されます。
+試合数が少ない要素は、理由に「サンプル不足」と表示します。重みは設定画面(`/settings`)で調整でき、アプリに保存されます。
 
 ### その他の画面
 
@@ -59,43 +59,59 @@ Draft.GGは、サモナーズリフト(5v5)のドラフトを補助するツー�
 | `/teams`    | 5人の登録とロール割り当て                                                |
 | `/settings` | 提案の重みの調整                                                         |
 
-Discordでのログインは任意です。未ログインの場合、プール・チーム・ドラフトはブラウザに保存されます。
+ログインは不要です。プレイヤー・チーム・保存したドラフトは、お使いのPCのアプリのデータフォルダにだけ保存し、サーバーには送りません。
+
+## インストール
+
+[Releases](https://github.com/Harukoto-Project/draft.gg/releases)から、お使いのOS(Windows / macOS)のインストーラーをダウンロードして実行します。
+
+> [!NOTE]
+> インストーラーには署名していません。初回は、WindowsのSmartScreenやmacOSのGatekeeperが警告を出します。
+
+統計データは、起動時に自動で取得してアプリに保存します。取得できなかったときも、前回保存したデータで提案できます。
 
 ## 仕組み
 
-統計は定期バッチでMySQLに取り込み、提案はリクエスト時に外部へ問い合わせず、取り込み済みのデータだけで計算します。
+統計は定期バッチでMySQLに取り込み、apiが1つのスナップショットにまとめて配信します。アプリはそれを取得して保存し、提案の計算はアプリの中(Rust)で行います。提案のときに外部へ問い合わせることはありません。
+
+プレイヤー・チーム・保存したドラフトはアプリのデータフォルダ(`userdata.json`)にだけ保存し、サーバーには送りません。サーバーを使うのは、統計の取得と、OP.GGからのプールの取り込み(ログイン不要。IPごとに回数を制限)だけです。
 
 ```mermaid
 flowchart LR
   ext["外部データ<br/>Data Dragon / OP.GG / Oracle's Elixir / Leaguepedia"] --> worker
   worker --> db[("MySQL")]
   db --> api
-  browser["ブラウザ"] --> web
-  web -->|"/api"| api
+  api -->|"/api/snapshot<br/>/api/pool-sync"| app["デスクトップアプリ<br/>(Tauri)"]
+  app --> local[("ローカル保存<br/>userdata.json")]
 ```
 
-| 場所                    | 役割                                                            |
-| ----------------------- | --------------------------------------------------------------- |
-| `apps/web`              | Next.js(App Router)の画面                                       |
-| `apps/api`              | HonoのREST API、認証、提案計算                                  |
-| `apps/worker`           | 定期バッチ。外部データの取り込みと集計                          |
-| `packages/engine`       | 提案のスコア計算(DB・HTTPに依存しない純粋関数)                  |
-| `packages/db`           | MySQLの接続、Drizzleのスキーマとマイグレーション                |
-| `packages/data-sources` | 外部データのアダプタ                                            |
-| `packages/shared`       | 型、Zodスキーマ、ドラフトの進行ルールなどの共通定義             |
-| `deploy/`               | systemdユニットのひな形(未検証。環境に合わせて調整してください) |
+| 場所                                     | 役割                                                                         |
+| ---------------------------------------- | ---------------------------------------------------------------------------- |
+| `apps/desktop`                           | Tauri 2のデスクトップアプリ。画面はVite + React、Rust側は`src-tauri/`        |
+| `apps/desktop/src-tauri/crates/engine`   | 提案のスコア計算(I/OにもTauriにも依存しない)                                 |
+| `apps/desktop/src-tauri/crates/snapshot` | スナップショットの取得(ETag)とキャッシュ                                     |
+| `apps/desktop/src-tauri/crates/storage`  | プレイヤー・チーム・保存ドラフトのローカル保存                               |
+| `apps/api`                               | Honoの読み取り専用API(snapshot / meta / pro / champions / status)とpool-sync |
+| `apps/worker`                            | 定期バッチ。外部データの取り込みと集計                                       |
+| `packages/db`                            | MySQLの接続、Drizzleのスキーマとマイグレーション                             |
+| `packages/data-sources`                  | 外部データのアダプタ                                                         |
+| `packages/shared`                        | 型、Zodスキーマ、ドラフトの進行ルールなどの共通定義                          |
+| `deploy/`                                | api・workerのsystemdユニットのひな形(未検証。環境に合わせて調整してください) |
 
 ### 技術スタック
 
-TypeScript / pnpm workspaces + Turborepo / Next.js / Tailwind CSS / TanStack Query / Hono / Drizzle ORM(MySQL)/ Better Auth / Vitest / Oxlint・Oxfmt
+Tauri 2 / Rust / TypeScript / React / Vite / Tailwind CSS / TanStack Query / Hono / Drizzle ORM(MySQL)/ pnpm workspaces + Turborepo / Vitest / Oxlint・Oxfmt
 
 ## セットアップ
+
+アプリを開発するときの手順です。使うだけなら[インストール](#インストール)を参照してください。
 
 ### 動作要件
 
 - Node.js 24以上
 - pnpm(`package.json`の`packageManager`に記載のバージョン)
-- MySQL(文字コードは`utf8mb4`で作成したデータベース)
+- Rust(stable)と、OSごとのTauriの前提ツール([Tauriの前提条件](https://v2.tauri.app/start/prerequisites/))
+- MySQL(文字コードは`utf8mb4`で作成したデータベース)。api / workerを動かすときに必要です
 
 ### 手順
 
@@ -117,13 +133,17 @@ TypeScript / pnpm workspaces + Turborepo / Next.js / Tailwind CSS / TanStack Que
    pnpm --filter @draftgg/db db:migrate
    ```
 
-4. web / api / workerを起動します。
+4. api / workerを起動します。apiは`127.0.0.1:3001`で待ち受けます。
 
    ```bash
-   pnpm dev
+   pnpm --filter @draftgg/api --filter @draftgg/worker dev
    ```
 
-   webは`http://localhost:3000`、apiは`127.0.0.1:3001`で待ち受けます。ブラウザからのAPI呼び出しはwebが同一オリジンの`/api`で中継します。
+5. 別のターミナルでアプリを起動します。接続先のapiは、既定で`http://127.0.0.1:3001`です。
+
+   ```bash
+   pnpm --filter @draftgg/desktop tauri:dev
+   ```
 
 統計はworkerが取り込みます。チャンピオン一覧(Data Dragon)は起動時と毎日の定時に、OP.GGとプロ試合の統計は毎日の定時ジョブで取り込むため、初回は統計が空のことがあります。
 
@@ -135,14 +155,10 @@ TypeScript / pnpm workspaces + Turborepo / Next.js / Tailwind CSS / TanStack Que
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `DATABASE_URL`                                          | MySQLの接続文字列(`mysql://<ユーザー>:<パスワード>@<ホスト>:<ポート>/<データベース名>`)。api / worker / マイグレーションが使う |
 | `API_HOST` / `API_PORT`                                 | apiの待ち受け。`API_HOST`は`127.0.0.1`(または`::1`)以外だと起動時にエラーになります                                            |
-| `WEB_PORT`                                              | webの待ち受けポート(本番の`next start`が参照)                                                                                  |
-| `BETTER_AUTH_URL` / `BETTER_AUTH_SECRET`                | Discordログイン用。公開URLと、32文字以上のランダムな文字列                                                                     |
-| `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET`           | Discordログイン用。Developer PortalのOAuth2で発行し、Redirectsに`<BETTER_AUTH_URL>/api/auth/callback/discord`を登録します      |
 | `ORACLES_ELIXIR_CSV_URL`                                | 任意。Oracle's ElixirのCSVの直リンクに差し替えるときだけ設定                                                                   |
 | `LEAGUEPEDIA_BOT_USERNAME` / `LEAGUEPEDIA_BOT_PASSWORD` | 任意。Leaguepediaのbot認証情報。未設定ならピック順の補完をスキップします                                                       |
 
-> [!NOTE]
-> Discordログインの4つの変数は、すべて空ならログインなしで動き、一部だけ設定すると起動時にエラーになります。
+アプリがつなぐapiのURLは、開発中は環境変数`DRAFTGG_API_URL`で変えられます(既定は`http://127.0.0.1:3001`)。リリースビルドでは、GitHubのリポジトリ変数`DRAFTGG_API_URL`の値が使われます。
 
 ## 開発
 
@@ -156,6 +172,12 @@ CIは使っていないため、変更を出す前にローカルで確認して
 | 整形 / 整形の確認のみ  | `pnpm format` / `pnpm format:check`     |
 | ビルド                 | `pnpm build`                            |
 | マイグレーションの生成 | `pnpm --filter @draftgg/db db:generate` |
+
+### リリース
+
+1. `apps/desktop/src-tauri/tauri.conf.json`と`Cargo.toml`の`version`を上げます。
+2. リポジトリ変数`DRAFTGG_API_URL`に、apiの公開URL(https)を登録します(初回のみ)。
+3. `v<バージョン>`のタグを作って送ります。GitHub Actionsが、WindowsとmacOSのインストーラーを作り、Releasesに下書きとして置きます。内容を確認して公開してください。
 
 ## 貢献
 
