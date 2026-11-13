@@ -5,9 +5,11 @@ pub mod composition;
 pub mod format;
 pub mod model;
 pub mod recommend;
+pub mod request;
 pub mod score;
 pub mod weights;
 
 pub use model::*;
 pub use recommend::{recommend, RecommendInput};
+pub use request::{recommend_for_request, RecommendationRequest, RequestError};
 pub use weights::{BanWeights, PickWeights};

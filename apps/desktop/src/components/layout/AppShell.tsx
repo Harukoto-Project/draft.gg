@@ -6,6 +6,7 @@ import { AppTitleBar } from "@/components/layout/AppTitleBar";
 import { useAppWindow } from "@/hooks/use-app-window";
 import { useGlobalShortcuts } from "@/hooks/use-global-shortcuts";
 import { useSnapLayoutTarget } from "@/hooks/use-snap-layout-target";
+import { useSnapshotSync } from "@/hooks/use-snapshot-sync";
 
 /**
  * アプリ全体の枠。OS のタイトルバーは tauri.conf.json で外してあり、AppWindow がかわりに描く。
@@ -15,6 +16,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { maximized, onClose, onMinimize, onMaximize } = useAppWindow();
   useSnapLayoutTarget();
   useGlobalShortcuts();
+  useSnapshotSync();
 
   return (
     <AppWindow
