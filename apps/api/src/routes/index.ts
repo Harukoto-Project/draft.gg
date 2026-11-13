@@ -12,6 +12,7 @@ import { health } from "./health.js";
 import { createMeRoute } from "./me.js";
 import { createMetaRoute } from "./meta.js";
 import type { MetaSource } from "./meta.js";
+import { createPoolSyncRoute } from "./pool-sync.js";
 import { createProfilesRoute } from "./profiles.js";
 import { createProRoute } from "./pro.js";
 import type { ProReader } from "./pro.js";
@@ -33,6 +34,8 @@ export interface RouteDeps {
   snapshot: SnapshotSource;
   recommendations: RecommendationSource;
   pro: ProReader;
+  /** ログイン無しで使える、プールの取得(デスクトップアプリ用) */
+  poolSync: PoolSync;
   profiles: { store: ProfileStore; sync: PoolSync };
   teams: { store: TeamStore };
   drafts: { store: DraftStore };
@@ -52,6 +55,7 @@ export function createRoutes(deps: RouteDeps) {
     .route("/status", createStatusRoute(deps.status))
     .route("/champions", createChampionsRoute(deps.champions))
     .route("/meta", createMetaRoute(deps.meta))
+    .route("/pool-sync", createPoolSyncRoute({ sync: deps.poolSync }))
     .route("/pro", createProRoute(deps.pro))
     .route("/snapshot", createSnapshotRoute(deps.snapshot))
     .route("/recommendations", createRecommendationsRoute(deps.recommendations));

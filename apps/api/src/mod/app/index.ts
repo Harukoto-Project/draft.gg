@@ -45,6 +45,7 @@ export function createApp(deps: AppDeps) {
       snapshot: deps.stats,
       recommendations: deps.stats,
       pro: { load: (query) => loadProChampions(db, query) },
+      poolSync: deps.poolSync,
       profiles: { store: createProfileStore(db), sync: deps.poolSync },
       teams: { store: createTeamStore(db) },
       drafts: { store: createDraftStore(db) },

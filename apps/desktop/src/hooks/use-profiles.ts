@@ -9,6 +9,7 @@ import {
   replacePool,
   updateProfile,
 } from "@/services/profiles";
+import { syncProfilePool } from "@/services/pool-sync";
 
 export const PROFILES_KEY = ["profiles"] as const;
 
@@ -71,6 +72,15 @@ export function useReplacePool() {
   return useMutation({
     mutationFn: (variables: { id: string; entries: PoolEntry[] }) =>
       replacePool(variables.id, variables.entries),
+    onSuccess: upsert,
+  });
+}
+
+/** OP.GG から取り込んで、プールへ反映する */
+export function useSyncPool() {
+  const upsert = useCacheUpsert();
+  return useMutation({
+    mutationFn: (profile: Profile) => syncProfilePool(profile),
     onSuccess: upsert,
   });
 }

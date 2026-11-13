@@ -235,6 +235,95 @@ fn 不正なプールは受け付けず_元のプールを残す() {
     );
 }
 
+fn synced(champion: &str, position: Position, games: u64) -> PoolEntry {
+    PoolEntry {
+        source: PoolSource::Opgg,
+        games: Some(games),
+        win_rate: Some(0.5),
+        ..entry(champion, position)
+    }
+}
+
+#[test]
+fn 同期の結果は_手動を残し_opgg_由来を入れ替え_除外を引き継ぎ_同期日時を記録する() {
+    let (_dir, storage) = open();
+    let created = storage.create_profile(input("たろう")).unwrap();
+    let mut old_excluded = synced("Zed", Position::Mid, 10);
+    old_excluded.excluded = true;
+    storage
+        .set_pool(
+            &created.id,
+            vec![
+                entry("Ahri", Position::Mid),
+                old_excluded,
+                synced("Lux", Position::Mid, 5),
+            ],
+        )
+        .unwrap();
+
+    let updated = storage
+        .apply_pool_sync(
+            &created.id,
+            vec![
+                synced("Ahri", Position::Mid, 99),
+                synced("Zed", Position::Mid, 40),
+                synced("Yone", Position::Mid, 30),
+            ],
+        )
+        .unwrap();
+
+    let keys: Vec<_> = updated
+        .pool
+        .iter()
+        .map(|e| (e.champion_id.as_str(), e.source, e.excluded, e.games))
+        .collect();
+    assert_eq!(
+        keys,
+        vec![
+            ("Ahri", PoolSource::Manual, false, None),
+            ("Zed", PoolSource::Opgg, true, Some(40)),
+            ("Yone", PoolSource::Opgg, false, Some(30)),
+        ]
+    );
+    let synced_at = updated.synced_at.clone().expect("synced_at");
+    assert!(synced_at.ends_with('Z') && synced_at.contains('T'));
+    assert_eq!(storage.list_profiles()[0], updated);
+}
+
+#[test]
+fn 同期の結果が不正なら_何も変えない() {
+    let (_dir, storage) = open();
+    let created = storage.create_profile(input("たろう")).unwrap();
+    let before = storage
+        .set_pool(&created.id, vec![entry("Ahri", Position::Mid)])
+        .unwrap();
+
+    let duplicated = vec![
+        synced("Zed", Position::Mid, 1),
+        synced("Zed", Position::Mid, 2),
+    ];
+    assert!(matches!(
+        storage.apply_pool_sync(&created.id, duplicated),
+        Err(StorageError::Invalid(_))
+    ));
+    assert!(matches!(
+        storage.apply_pool_sync("nope", vec![]),
+        Err(StorageError::NotFound)
+    ));
+    assert_eq!(storage.list_profiles()[0], before);
+}
+
+#[test]
+fn 同期の結果は_手動と合わせて_100_件まで() {
+    let (_dir, storage) = open();
+    let created = storage.create_profile(input("たろう")).unwrap();
+    let fetched: Vec<_> = (0..120)
+        .map(|n| synced(&format!("Champ{n}"), Position::Top, 1))
+        .collect();
+
+    let updated = storage.apply_pool_sync(&created.id, fetched).unwrap();
+    assert_eq!(updated.pool.len(), 100);
+}
 // ---- チーム ----
 
 fn members(pairs: &[(Position, &str)]) -> TeamMembers {
