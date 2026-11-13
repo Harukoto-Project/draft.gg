@@ -1,5 +1,6 @@
 import { draftHasChampion } from "@draftgg/shared";
 import type { DraftFormat } from "@draftgg/shared";
+import { PanelRightClose, PanelRightOpen } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -15,11 +16,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useDraft } from "@/hooks/use-draft";
-import { formatMessage } from "@/lib/formatMessage";
+import { useInspectorLayout } from "@/hooks/use-inspector-layout";
+
 import ja from "@/messages/ja.json";
 
-export function DraftToolbar({ patch }: { patch: string | null }) {
+export function DraftToolbar() {
   const { state, chooseFormat, chooseSide, reset } = useDraft();
+  const inspector = useInspectorLayout();
   const [pendingFormat, setPendingFormat] = useState<DraftFormat | null>(null);
   const [resetOpen, setResetOpen] = useState(false);
   const dirty = draftHasChampion(state);
@@ -35,14 +38,10 @@ export function DraftToolbar({ patch }: { patch: string | null }) {
   }
 
   return (
-    <div className="flex shrink-0 flex-col gap-3 px-4 py-3 md:flex-row md:items-center">
-      <div className="flex min-w-0 items-baseline gap-3">
-        <h1 className="text-xl font-semibold text-foreground">{ja.draft.title}</h1>
-        <p className="truncate text-xs text-muted-foreground">
-          {patch ? formatMessage(ja.draft.patch, { version: patch }) : ja.draft.patchUnknown}
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center gap-2 md:ml-auto">
+    <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 px-2 py-2">
+      <h1 className="sr-only">{ja.draft.title}</h1>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground">{ja.draft.format}</span>
         <ToggleGroup
           type="single"
           size="sm"
@@ -55,6 +54,9 @@ export function DraftToolbar({ patch }: { patch: string | null }) {
           <ToggleGroupItem value="ranked">{ja.draft.formatRanked}</ToggleGroupItem>
           <ToggleGroupItem value="tournament">{ja.draft.formatTournament}</ToggleGroupItem>
         </ToggleGroup>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground">{ja.draft.mySide}</span>
         <ToggleGroup
           type="single"
           size="sm"
@@ -69,8 +71,24 @@ export function DraftToolbar({ patch }: { patch: string | null }) {
           <ToggleGroupItem value="blue">{ja.draft.sideBlue}</ToggleGroupItem>
           <ToggleGroupItem value="red">{ja.draft.sideRed}</ToggleGroupItem>
         </ToggleGroup>
+      </div>
 
-        <Button variant="outline" disabled={!dirty} onClick={() => setResetOpen(true)}>
+      <div className="ml-auto flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-pressed={inspector.open}
+          onClick={inspector.toggle}
+          className="hidden xl:inline-flex"
+        >
+          {inspector.open ? (
+            <PanelRightClose aria-hidden="true" />
+          ) : (
+            <PanelRightOpen aria-hidden="true" />
+          )}
+          {ja.recommendation.panel}
+        </Button>
+        <Button variant="outline" size="sm" disabled={!dirty} onClick={() => setResetOpen(true)}>
           {ja.draft.reset}
         </Button>
       </div>

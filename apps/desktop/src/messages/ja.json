@@ -57,8 +57,6 @@
     "searchCount": "{count}件",
     "noMatches": "一致するチャンピオンはいません",
     "taken": "使用済み",
-    "patch": "パッチ{version}",
-    "patchUnknown": "パッチ未取得",
     "loadError": "チャンピオン一覧を読み込めませんでした。",
     "retry": "再読み込み",
     "emptyCatalog": "チャンピオンがまだ取り込まれていません。取り込みが終わってから再読み込みしてください。",
@@ -296,6 +294,9 @@
     }
   },
   "recommendation": {
+    "panel": "推薦パネル",
+    "resize": "推薦パネルの幅",
+    "resizeHint": "ドラッグか左右キーで幅を変更。ダブルクリックかEnterで閉じる",
     "title": "提案",
     "view": "表示する内容",
     "tabChampions": "チャンピオン",

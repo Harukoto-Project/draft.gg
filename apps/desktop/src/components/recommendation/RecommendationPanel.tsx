@@ -187,7 +187,7 @@ function CandidateList({
   onPick: (championId: string) => void;
 }) {
   return (
-    <ol className="flex flex-col gap-2">
+    <ol className="flex flex-col gap-1.5">
       {candidates.map((candidate, index) => (
         <CandidateCard
           key={candidate.championId}
