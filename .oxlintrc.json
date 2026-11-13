@@ -10,6 +10,16 @@
     "**/.turbo/**",
     "**/node_modules/**",
     "apps/web/src/components/ui/**",
-    "apps/web/src/hooks/use-mobile.ts"
+    "apps/web/src/hooks/use-mobile.ts",
+    "apps/desktop/src/components/ui/**",
+    "**/src-tauri/target/**",
+    "**/src-tauri/gen/**"
+  ],
+  "overrides": [
+    {
+      // desktop は Next.js ではなく Vite。Next 向けの <img> の警告は対象外にする
+      "files": ["apps/desktop/**"],
+      "rules": { "nextjs/no-img-element": "off" }
+    }
   ]
 }

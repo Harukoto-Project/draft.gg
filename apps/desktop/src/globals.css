@@ -1,0 +1,156 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: "Noto Sans JP Variable", ui-sans-serif, system-ui, sans-serif;
+  /* ウィンドウ枠(タイトルバー)用。Windows は Segoe UI Variable、日本語は同梱の Noto Sans JP に落とす */
+  --font-chrome:
+    "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", -apple-system,
+    "Noto Sans JP Variable", sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-masthead: var(--masthead);
+  --color-masthead-foreground: var(--masthead-foreground);
+  --color-gold: var(--gold);
+  --color-side-blue: var(--side-blue);
+  --color-side-red: var(--side-red);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: #eef2f6;
+  --foreground: #1c2430;
+  --card: #ffffff;
+  --card-foreground: #1c2430;
+  --popover: #ffffff;
+  --popover-foreground: #1c2430;
+  --primary: #c8aa6e;
+  --primary-foreground: #1a1408;
+  --secondary: #e4eaf1;
+  --secondary-foreground: #1c2430;
+  --muted: #e4eaf1;
+  --muted-foreground: #526070;
+  --accent: #e4eaf1;
+  --accent-foreground: #1c2430;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #d3dbe4;
+  --input: #d3dbe4;
+  --ring: #8a6a2f;
+  --masthead: #15202b;
+  --masthead-foreground: #f4efe4;
+  --gold: #c8aa6e;
+  --side-blue: #2f6fad;
+  --side-red: #b23b32;
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.125rem;
+  --sidebar: #f4f4f5;
+  --sidebar-foreground: #27272a;
+  --sidebar-primary: #27272a;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #e4e4e7;
+  --sidebar-accent-foreground: #27272a;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #71717a;
+}
+
+.dark {
+  --background: #121820;
+  --foreground: #e8e2d4;
+  --card: #1b2430;
+  --card-foreground: #e8e2d4;
+  --popover: #1b2430;
+  --popover-foreground: #e8e2d4;
+  --primary: #c8aa6e;
+  --primary-foreground: #1a1408;
+  --secondary: #243040;
+  --secondary-foreground: #e8e2d4;
+  --muted: #243040;
+  --muted-foreground: #a3adba;
+  --accent: #243040;
+  --accent-foreground: #e8e2d4;
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: #314052;
+  --input: #314052;
+  --ring: #c8aa6e;
+  --masthead: #0e141c;
+  --masthead-foreground: #f4efe4;
+  --gold: #c8aa6e;
+  --side-blue: #6ea2d6;
+  --side-red: #e07a72;
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: #18181b;
+  --sidebar-foreground: #f4f4f5;
+  --sidebar-primary: #f4f4f5;
+  --sidebar-primary-foreground: #18181b;
+  --sidebar-accent: #27272a;
+  --sidebar-accent-foreground: #f4f4f5;
+  --sidebar-border: #3f3f46;
+  --sidebar-ring: #a1a1aa;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  html {
+    @apply font-sans;
+  }
+}

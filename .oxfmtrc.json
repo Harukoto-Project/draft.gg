@@ -6,6 +6,8 @@
     "**/.next/**",
     "**/.turbo/**",
     "pnpm-lock.yaml",
-    "packages/db/drizzle/**"
+    "packages/db/drizzle/**",
+    "**/src-tauri/target/**",
+    "**/src-tauri/gen/**"
   ]
 }

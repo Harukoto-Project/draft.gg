@@ -29,3 +29,7 @@ data/
 Thumbs.db
 
 .open-next/
+
+# Rust / Tauri
+target/
+apps/desktop/src-tauri/gen/
