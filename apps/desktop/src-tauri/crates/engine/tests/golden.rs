@@ -1,6 +1,6 @@
-//! TS 版 engine(`packages/engine`)が出力した入力と結果(`tests/golden/recommend.json`)を、
+//! 旧 TS 版 engine が出力した入力と結果(`tests/golden/recommend.json`)を、
 //! Rust 版が同じ数値・同じ文言・同じ並びで返すことを確かめる。
-//! golden は TS 側のテスト(`UPDATE_GOLDEN=1 pnpm --filter @draftgg/engine test`)で作る。TS 版を削除した後は、このファイルが仕様の固定になる。
+//! TS 版は削除済みなので、golden は仕様の固定として扱う。計算を意図して変えるときだけ、Rust 側で作り直す。
 
 use std::collections::HashMap;
 use std::fs;
