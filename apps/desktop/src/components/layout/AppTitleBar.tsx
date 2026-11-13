@@ -12,6 +12,7 @@ import ja from "@/messages/ja.json";
 /**
  * タイトルバー。ウィンドウ操作ボタンは AppWindow が OS に合わせて描く。
  * ページ切り替えはタイトルバーの中に置き、本体の縦幅を広く使う。
+ * 背景は塗らず、Mica(使えないときは下地の単色)をそのまま見せる。
  */
 export function AppTitleBar() {
   const { pathname } = useLocation();
@@ -23,17 +24,17 @@ export function AppTitleBar() {
     <AppWindowTitleBar
       // Windows は左端にアイコンとタイトル。macOS と web は、中央タイトルがナビと重ならないようブランドをナビの前に置く
       title={windows ? ja.app.title : undefined}
-      icon={windows ? <Swords className="text-gold" /> : undefined}
+      icon={windows ? <Swords className="text-selection" /> : undefined}
       leading={
         <>
           {windows ? null : (
-            <Link to="/draft" className="me-2 text-sm font-semibold text-gold">
+            <Link to="/draft" className="me-2 text-sm font-semibold text-foreground">
               {ja.app.title}
             </Link>
           )}
           <nav
             aria-label={ja.nav.label}
-            className="flex h-[var(--bm-titlebar-h,2.5rem)] items-stretch gap-1"
+            className={cn("flex h-full items-center gap-1", windows && "ms-4")}
           >
             {NAV_ITEMS.map((item, index) => {
               const current = currentHref === item.href;
@@ -45,21 +46,26 @@ export function AppTitleBar() {
                   aria-keyshortcuts={`Control+${index + 1} Meta+${index + 1}`}
                   title={`${item.label} (${modifierKeyLabel()}${index + 1})`}
                   className={cn(
-                    "flex items-center border-b-2 px-3 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-inset",
+                    "relative flex h-7 items-center rounded-md px-3 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                     current
-                      ? "border-gold text-gold"
-                      : "border-transparent text-masthead-foreground/75 hover:bg-white/5 hover:text-gold",
+                      ? "bg-foreground/[0.06] font-medium text-foreground"
+                      : "text-foreground/70 hover:bg-foreground/[0.05] hover:text-foreground",
                   )}
                 >
                   {item.label}
+                  {current ? (
+                    <span
+                      aria-hidden="true"
+                      className="absolute bottom-0 left-1/2 h-[3px] w-4 -translate-x-1/2 rounded-full bg-selection"
+                    />
+                  ) : null}
                 </Link>
               );
             })}
           </nav>
         </>
       }
-      // ウィンドウ操作ボタンの色(foreground)を、暗いマストヘッド上で読める色に差し替える
-      className="border-b-0 bg-masthead font-chrome text-masthead-foreground [--foreground:var(--masthead-foreground)]"
+      className="h-9 border-b-0 bg-transparent font-chrome text-foreground"
     >
       <ThemeMenu />
     </AppWindowTitleBar>

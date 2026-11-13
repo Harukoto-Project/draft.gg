@@ -43,7 +43,7 @@ export function DraftToolbar() {
   }
 
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 px-2 py-2">
+    <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2">
       <h1 className="sr-only">{ja.draft.title}</h1>
       <div className="flex items-center gap-2">
         <span className="text-xs text-muted-foreground">{ja.draft.format}</span>

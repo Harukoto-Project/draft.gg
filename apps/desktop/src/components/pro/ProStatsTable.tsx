@@ -54,7 +54,7 @@ export function ProStatsTable({
                   className={cn(
                     "w-full cursor-pointer px-3 py-2 text-xs transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
                     column.numeric ? "text-right" : "text-left",
-                    active ? "text-gold" : "text-muted-foreground",
+                    active ? "text-foreground" : "text-muted-foreground",
                   )}
                 >
                   {column.label}

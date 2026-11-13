@@ -35,7 +35,7 @@ export function DraftCenter({
       : draft.state.actions.find((action) => action.step === draft.activeStep);
 
   return (
-    <div className={cn("flex min-h-0 flex-col gap-2 overflow-hidden bg-card p-3", className)}>
+    <div className={cn("flex min-h-0 flex-col gap-2 overflow-hidden p-3", className)}>
       <ToggleGroup
         type="single"
         size="sm"
@@ -78,7 +78,7 @@ export function DraftCenter({
         ) : null}
         <div
           className={cn(
-            "min-h-0 flex-1",
+            "min-h-0 flex-1 xl:rounded-lg xl:border xl:bg-muted/30 xl:p-3",
             tab !== "suggestions" && "hidden",
             inspector.open ? "xl:block" : "xl:hidden",
           )}

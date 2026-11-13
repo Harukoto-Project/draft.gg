@@ -124,7 +124,7 @@ function ChampionResults({
         <p className="text-sm text-foreground">{ja.draft.noMatches}</p>
       ) : (
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(4.5rem,1fr))] gap-1">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(5rem,1fr))] gap-1">
             {visible.map((champion) => {
               const used = taken.has(champion.id);
               return (
@@ -135,11 +135,11 @@ function ChampionResults({
                   aria-label={used ? `${champion.nameJa}、${ja.draft.taken}` : champion.nameJa}
                   onClick={() => onPick(champion.id)}
                   className={cn(
-                    "flex min-w-0 cursor-pointer flex-col items-center gap-1 p-1 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed",
+                    "flex min-w-0 cursor-pointer flex-col items-center gap-1 rounded-lg p-1.5 outline-none transition-colors hover:bg-foreground/[0.06] focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed",
                     used && "opacity-40",
                   )}
                 >
-                  <span className="relative size-12 overflow-hidden">
+                  <span className="relative size-14 overflow-hidden rounded-md">
                     <ChampionIcon champion={champion} />
                   </span>
                   <span className="w-full truncate text-xs text-foreground">{champion.nameJa}</span>

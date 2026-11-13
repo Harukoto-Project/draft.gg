@@ -1,14 +1,14 @@
 import type { Champion } from "@draftgg/shared";
 import { useMemo } from "react";
 
-import { DraftBans } from "@/components/draft/DraftBans";
 import { DraftCenter } from "@/components/draft/DraftCenter";
-import { DraftPicks } from "@/components/draft/DraftPicks";
 import { DraftScreenSkeleton } from "@/components/draft/DraftScreenSkeleton";
+import { DraftSide } from "@/components/draft/DraftSide";
 import { DraftToolbar } from "@/components/draft/DraftToolbar";
 import { DraftProvider } from "@/contexts/DraftContext";
 import { useChampions } from "@/hooks/use-champions";
 import { useDraft } from "@/hooks/use-draft";
+
 export function DraftScreen() {
   return (
     <DraftProvider>
@@ -17,6 +17,10 @@ export function DraftScreen() {
   );
 }
 
+/**
+ * 上に 2 陣営の帯(BAN とピック)、下にチャンピオン一覧と推薦を置く。
+ * 縦が足りないときは全体がスクロールし、一覧の高さは下限を保つ。
+ */
 function DraftWorkspace() {
   const draft = useDraft();
   const champions = useChampions();
@@ -31,36 +35,13 @@ function DraftWorkspace() {
   if (!draft.ready) return <DraftScreenSkeleton />;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
       <DraftToolbar />
-      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
-        <div className="grid grid-cols-2 gap-2 lg:h-full lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)_minmax(0,1fr)] lg:grid-rows-[auto_minmax(0,1fr)]">
-          <DraftBans
-            side="blue"
-            championsById={championsById}
-            className="lg:col-start-1 lg:row-start-1"
-          />
-          <DraftBans
-            side="red"
-            championsById={championsById}
-            className="lg:col-start-3 lg:row-start-1"
-          />
-          <DraftPicks
-            side="blue"
-            championsById={championsById}
-            className="lg:col-start-1 lg:row-start-2"
-          />
-          <DraftPicks
-            side="red"
-            championsById={championsById}
-            className="lg:col-start-3 lg:row-start-2"
-          />
-          <DraftCenter
-            championsById={championsById}
-            className="col-span-2 h-[36rem] lg:col-span-1 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-auto"
-          />
-        </div>
+      <div className="grid shrink-0 grid-cols-1 gap-2 px-3 md:grid-cols-2">
+        <DraftSide side="blue" championsById={championsById} />
+        <DraftSide side="red" championsById={championsById} />
       </div>
+      <DraftCenter championsById={championsById} className="min-h-96 flex-1" />
     </div>
   );
 }
