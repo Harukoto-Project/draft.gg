@@ -1,0 +1,90 @@
+name: release
+
+# `v*` のタグを push すると、Windows と macOS のインストーラーを作り、GitHub Releases に下書きで置く。
+# 下書きを確認してから公開する。署名はしない(利用者の環境で SmartScreen / Gatekeeper の警告が出る)。
+#
+# 事前に、リポジトリの変数(Settings > Secrets and variables > Actions > Variables)へ
+# `DRAFTGG_API_URL` に api の公開 URL(例: https://api.example.com)を登録する。秘密情報ではない。
+# タグを打つ前に、`apps/desktop/src-tauri/tauri.conf.json` と `Cargo.toml` の version をタグに合わせる。
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            args: ""
+            rust-targets: ""
+          - os: macos-latest
+            args: "--target universal-apple-darwin"
+            rust-targets: "aarch64-apple-darwin,x86_64-apple-darwin"
+    runs-on: ${{ matrix.os }}
+    env:
+      DRAFTGG_API_URL: ${{ vars.DRAFTGG_API_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: api の URL を確認
+        shell: bash
+        run: |
+          if [[ ! "$DRAFTGG_API_URL" =~ ^https://[A-Za-z0-9.-]+(:[0-9]+)?/?$ ]]; then
+            echo "変数 DRAFTGG_API_URL に、api の https の URL を登録してください" >&2
+            exit 1
+          fi
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust-targets }}
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+
+      - run: pnpm install --frozen-lockfile
+
+      # 画面は @draftgg/shared の dist を参照する
+      - name: 共有パッケージをビルド
+        run: pnpm --filter "./packages/*" build
+
+      # アプリは api に Rust 側の HTTP クライアントでつなぐ。接続先を許可する権限は、公開 URL が
+      # 決まってから(ビルド時に)足す。開発用の 127.0.0.1:3001 は、リポジトリの capabilities に入っている。
+      - name: api への接続を許可する権限を足す
+        shell: bash
+        run: |
+          url="${DRAFTGG_API_URL%/}"
+          cat > apps/desktop/src-tauri/capabilities/release-api.json <<EOF
+          {
+            "identifier": "release-api",
+            "description": "公開 api への HTTP を許可する(ビルド時に生成)",
+            "windows": ["main"],
+            "permissions": [{ "identifier": "http:default", "allow": [{ "url": "${url}/*" }] }]
+          }
+          EOF
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 画面(Vite)と Rust の両方に、同じ接続先を渡す
+          VITE_API_BASE_URL: ${{ vars.DRAFTGG_API_URL }}
+        with:
+          projectPath: apps/desktop
+          tagName: ${{ github.ref_name }}
+          releaseName: "Draft.GG ${{ github.ref_name }}"
+          releaseBody: "インストーラーをダウンロードして実行してください。署名していないため、初回は OS の警告が出ます。"
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
