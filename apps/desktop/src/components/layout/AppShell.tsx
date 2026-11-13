@@ -4,6 +4,7 @@ import { AppWindow, AppWindowContent } from "@/components/ballmac/app-window";
 import { AppFooter } from "@/components/layout/AppFooter";
 import { AppTitleBar } from "@/components/layout/AppTitleBar";
 import { useAppWindow } from "@/hooks/use-app-window";
+import { useSnapLayoutTarget } from "@/hooks/use-snap-layout-target";
 
 /**
  * アプリ全体の枠。OS のタイトルバーは tauri.conf.json で外してあり、AppWindow がかわりに描く。
@@ -11,6 +12,7 @@ import { useAppWindow } from "@/hooks/use-app-window";
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const { maximized, onClose, onMinimize, onMaximize } = useAppWindow();
+  useSnapLayoutTarget();
 
   return (
     <AppWindow

@@ -154,3 +154,10 @@
     @apply font-sans;
   }
 }
+
+/* スナップレイアウトの透明な領域がポインターを受けるため、最大化ボタンの :hover は効かない。
+   プラグインが付ける .is-hovered で同じ見た目にする(use-snap-layout-target.ts) */
+[data-slot="app-window-maximize"].is-hovered,
+[data-slot="app-window-restore"].is-hovered {
+  background-color: color-mix(in oklab, var(--foreground) 6%, transparent);
+}
