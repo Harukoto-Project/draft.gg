@@ -6,14 +6,19 @@ import { Link } from "react-router";
 
 import { CandidateCard } from "@/components/recommendation/CandidateCard";
 import { MyRolePicker } from "@/components/recommendation/MyRolePicker";
+import { PlayerPicker } from "@/components/recommendation/PlayerPicker";
+import { TeamPicker } from "@/components/recommendation/TeamPicker";
 import { RoleIcon } from "@/components/role/RoleIcon";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useDraft } from "@/hooks/use-draft";
+import { useProfiles } from "@/hooks/use-profiles";
 import { useRecommendations } from "@/hooks/use-recommendations";
+import { useTeams } from "@/hooks/use-teams";
 import { useWeightOverrides } from "@/hooks/use-weights";
 import { formatMessage } from "@/lib/formatMessage";
+import { buildPoolHints, buildTeamPoolHints } from "@/lib/poolHints";
 import { requestWeights, resolveWeights, weightsTotal } from "@/lib/weights";
 import ja from "@/messages/ja.json";
 
@@ -30,9 +35,20 @@ export function RecommendationPanel({
   onPick: (championId: string) => void;
 }) {
   const { state, ready, chooseMyPosition } = useDraft();
+  const profiles = useProfiles();
+  const [playerId, setPlayerId] = useState<string | null>(null);
+  const player = profiles.data?.find((profile) => profile.id === playerId);
+  const teams = useTeams();
+  const [teamId, setTeamId] = useState<string | null>(null);
+  const team = teams.data?.find((item) => item.id === teamId);
   const solo = state.me !== null;
-  // プール(プレイヤー・チーム)は、ローカル保存を作るとき(移植の P5)に戻す
-  const pools = undefined;
+  const pools = useMemo(
+    () =>
+      solo
+        ? buildPoolHints(player, state.me?.position ?? null)
+        : buildTeamPoolHints(team, profiles.data ?? []),
+    [solo, player, team, profiles.data, state.me?.position],
+  );
 
   const { overrides } = useWeightOverrides();
   const weights = useMemo(
@@ -42,12 +58,24 @@ export function RecommendationPanel({
   const query = useRecommendations(state, ready, pools, weights);
   const current = resolveWeights(solo ? "solo" : "team", overrides);
   const [view, setView] = useState<View>("pick");
+  // ソロ(自分のロールを選んだとき)はプレイヤー、チーム(選んでいないとき)はチームのプールを使う
+  const showPlayerPicker = solo && (profiles.data?.length ?? 0) > 0;
+  const showTeamPicker = !solo && (teams.data?.length ?? 0) > 0;
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <MyRolePicker value={state.me?.position ?? null} onChange={chooseMyPosition} />
-
+        {showPlayerPicker ? (
+          <PlayerPicker
+            profiles={profiles.data ?? []}
+            value={player?.id ?? null}
+            onChange={setPlayerId}
+          />
+        ) : null}
+        {showTeamPicker ? (
+          <TeamPicker teams={teams.data ?? []} value={team?.id ?? null} onChange={setTeamId} />
+        ) : null}
         <ToggleGroup
           type="single"
           size="sm"
@@ -187,7 +215,7 @@ function CandidateList({
   onPick: (championId: string) => void;
 }) {
   return (
-    <ol className="flex flex-col gap-2">
+    <ol className="flex flex-col gap-1.5">
       {candidates.map((candidate, index) => (
         <CandidateCard
           key={candidate.championId}

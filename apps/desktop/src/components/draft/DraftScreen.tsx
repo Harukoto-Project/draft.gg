@@ -32,9 +32,9 @@ function DraftWorkspace() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <DraftToolbar patch={champions.data?.patch ?? null} />
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
-        <div className="grid grid-cols-2 gap-3 lg:h-full lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)_minmax(0,1fr)] lg:grid-rows-[auto_minmax(0,1fr)]">
+      <DraftToolbar />
+      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
+        <div className="grid grid-cols-2 gap-2 lg:h-full lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)_minmax(0,1fr)] lg:grid-rows-[auto_minmax(0,1fr)]">
           <DraftBans
             side="blue"
             championsById={championsById}

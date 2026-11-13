@@ -1,17 +1,23 @@
 import { championIdsInUse } from "@draftgg/shared";
 import type { Champion } from "@draftgg/shared";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type { CSSProperties } from "react";
 
 import { ChampionGrid } from "@/components/champion/ChampionGrid";
+import { InspectorSplitter } from "@/components/draft/InspectorSplitter";
 import { RecommendationPanel } from "@/components/recommendation/RecommendationPanel";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useDraft } from "@/hooks/use-draft";
+import { useInspectorLayout } from "@/hooks/use-inspector-layout";
 import { cn } from "@/lib/utils";
 import ja from "@/messages/ja.json";
 
 type Tab = "champions" | "suggestions";
 
-/** 中央の列。広い画面ではチャンピオン一覧と提案を並べ、狭い画面ではタブで切り替える */
+/**
+ * 中央の列。広い画面ではチャンピオン一覧(作業面)と推薦(インスペクター)を並べ、
+ * 境界線で推薦の幅を変えたり、閉じたりできる。狭い画面ではタブで切り替える。
+ */
 export function DraftCenter({
   championsById,
   className,
@@ -20,14 +26,16 @@ export function DraftCenter({
   className?: string;
 }) {
   const draft = useDraft();
+  const inspector = useInspectorLayout();
   const [tab, setTab] = useState<Tab>("champions");
+  const bodyRef = useRef<HTMLDivElement>(null);
   const activeAction =
     draft.activeStep === null
       ? undefined
       : draft.state.actions.find((action) => action.step === draft.activeStep);
 
   return (
-    <div className={cn("flex min-h-0 flex-col gap-3 overflow-hidden bg-card p-3", className)}>
+    <div className={cn("flex min-h-0 flex-col gap-2 overflow-hidden bg-card p-3", className)}>
       <ToggleGroup
         type="single"
         size="sm"
@@ -43,7 +51,16 @@ export function DraftCenter({
         <ToggleGroupItem value="champions">{ja.recommendation.tabChampions}</ToggleGroupItem>
         <ToggleGroupItem value="suggestions">{ja.recommendation.tabSuggestions}</ToggleGroupItem>
       </ToggleGroup>
-      <div className="flex min-h-0 flex-1 flex-col gap-4 xl:grid xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:grid-rows-[minmax(0,1fr)]">
+      <div
+        ref={bodyRef}
+        style={{ "--inspector-w": `${inspector.width}px` } as CSSProperties}
+        className={cn(
+          "flex min-h-0 flex-1 flex-col xl:grid xl:grid-rows-[minmax(0,1fr)]",
+          inspector.open
+            ? "xl:grid-cols-[minmax(0,1fr)_0.75rem_min(var(--inspector-w),55%)]"
+            : "xl:grid-cols-[minmax(0,1fr)]",
+        )}
+      >
         <div className={cn("min-h-0 flex-1", tab !== "champions" && "hidden xl:block")}>
           <ChampionGrid
             taken={championIdsInUse(draft.state)}
@@ -51,10 +68,19 @@ export function DraftCenter({
             onPick={draft.pickChampion}
           />
         </div>
+        {inspector.open ? (
+          <InspectorSplitter
+            width={inspector.width}
+            containerRef={bodyRef}
+            onWidthChange={inspector.setWidth}
+            onCollapse={() => inspector.setOpen(false)}
+          />
+        ) : null}
         <div
           className={cn(
-            "min-h-0 flex-1 xl:border-l xl:border-border xl:pl-4",
-            tab !== "suggestions" && "hidden xl:block",
+            "min-h-0 flex-1",
+            tab !== "suggestions" && "hidden",
+            inspector.open ? "xl:block" : "xl:hidden",
           )}
         >
           <RecommendationPanel

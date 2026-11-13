@@ -5,6 +5,7 @@ import { AppWindowTitleBar } from "@/components/ballmac/app-window";
 import { ThemeMenu } from "@/components/layout/ThemeMenu";
 import { NAV_ITEMS, navItemForPath } from "@/config/navigation";
 import { useFeel } from "@/lib/ballmac/feel";
+import { modifierKeyLabel } from "@/lib/platform";
 import { cn } from "@/lib/utils";
 import ja from "@/messages/ja.json";
 
@@ -26,7 +27,7 @@ export function AppTitleBar() {
       leading={
         <>
           {windows ? null : (
-            <Link to="/" className="me-2 text-sm font-semibold text-gold">
+            <Link to="/draft" className="me-2 text-sm font-semibold text-gold">
               {ja.app.title}
             </Link>
           )}
@@ -34,13 +35,15 @@ export function AppTitleBar() {
             aria-label={ja.nav.label}
             className="flex h-[var(--bm-titlebar-h,2.5rem)] items-stretch gap-1"
           >
-            {NAV_ITEMS.map((item) => {
+            {NAV_ITEMS.map((item, index) => {
               const current = currentHref === item.href;
               return (
                 <Link
                   key={item.href}
                   to={item.href}
                   aria-current={current ? "page" : undefined}
+                  aria-keyshortcuts={`Control+${index + 1} Meta+${index + 1}`}
+                  title={`${item.label} (${modifierKeyLabel()}${index + 1})`}
                   className={cn(
                     "flex items-center border-b-2 px-3 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-inset",
                     current

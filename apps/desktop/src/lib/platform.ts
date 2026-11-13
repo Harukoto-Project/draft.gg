@@ -11,3 +11,8 @@ export function initWindowFeel(): void {
   const feel = isTauri ? (storedFeel() ?? detectFeel()) : "web";
   document.documentElement.setAttribute("data-feel", feel);
 }
+
+/** ショートカット表示用の修飾キー名。macOS は ⌘、それ以外は Ctrl+ */
+export function modifierKeyLabel(): string {
+  return detectFeel() === "macos" ? "⌘" : "Ctrl+";
+}

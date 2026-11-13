@@ -28,14 +28,14 @@ export function DraftBans({
     <section
       aria-label={`${label}の${ja.draft.ban}`}
       className={cn(
-        "flex min-w-0 flex-col gap-2 border-t-4 bg-card p-3",
+        "flex min-w-0 flex-col gap-1.5 border-t-2 bg-card p-2",
         side === "blue" ? "border-side-blue" : "border-side-red",
         className,
       )}
     >
       <h2
         className={cn(
-          "flex items-baseline gap-2 text-base font-semibold text-foreground",
+          "flex items-baseline gap-2 text-sm font-semibold text-foreground",
           side === "red" && "flex-row-reverse",
         )}
       >

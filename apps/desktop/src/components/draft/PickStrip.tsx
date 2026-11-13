@@ -44,16 +44,7 @@ export function PickStrip({
   const name = champion ? champion.nameJa : championId;
 
   return (
-    <div
-      className={cn(
-        "relative h-full min-h-[4.5rem] min-w-0 overflow-hidden border bg-background",
-        active && "border-gold",
-        !active && suggested && "border-dashed",
-        !active && suggested && (turn.side === "blue" ? "border-side-blue" : "border-side-red"),
-        !active && !suggested && !filled && "border-dashed border-border",
-        !active && !suggested && filled && "border-border",
-      )}
-    >
+    <div className={cn("relative h-full min-h-[4.5rem] min-w-0 overflow-hidden bg-muted/40")}>
       {champion ? (
         <>
           <PickSplash key={champion.id} champion={champion} />
@@ -62,12 +53,17 @@ export function PickStrip({
       ) : (
         <div className={cn("absolute inset-0", active && "bg-gold/15")} />
       )}
-      {active ? (
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-10 border-[3px] border-gold"
-        />
-      ) : null}
+      <div
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute inset-0 z-10",
+          active && "border-2 border-gold",
+          !active && suggested && "border",
+          !active &&
+            suggested &&
+            (turn.side === "blue" ? "border-side-blue/70" : "border-side-red/70"),
+        )}
+      />
       <button
         type="button"
         aria-label={name ? `${label} ${name}` : label}

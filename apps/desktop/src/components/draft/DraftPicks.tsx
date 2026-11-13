@@ -26,11 +26,11 @@ export function DraftPicks({
       aria-label={`${label}の${ja.draft.pick}`}
       className={cn(
         "flex min-h-0 min-w-0 flex-col overflow-y-auto bg-card p-2",
-        side === "blue" ? "border-l-4 border-side-blue" : "border-r-4 border-side-red",
+        side === "blue" ? "border-l-2 border-side-blue" : "border-r-2 border-side-red",
         className,
       )}
     >
-      <ol className="flex flex-1 flex-col gap-2">
+      <ol className="flex flex-1 flex-col gap-1.5">
         {picks.map((turn, index) => {
           const championId = actionChampionId(state, turn.step);
           return (

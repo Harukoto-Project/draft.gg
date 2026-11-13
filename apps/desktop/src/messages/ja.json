@@ -57,8 +57,6 @@
     "searchCount": "{count}件",
     "noMatches": "一致するチャンピオンはいません",
     "taken": "使用済み",
-    "patch": "パッチ{version}",
-    "patchUnknown": "パッチ未取得",
     "loadError": "チャンピオン一覧を読み込めませんでした。",
     "retry": "再読み込み",
     "emptyCatalog": "チャンピオンがまだ取り込まれていません。取り込みが終わってから再読み込みしてください。",
@@ -170,27 +168,19 @@
       "retryAfter": "あと{minutes}分ほど待ってください。"
     }
   },
-  "home": {
-    "title": "ドラフトの判断を、データで支える",
-    "description": "LoLのBANとピックを入力すると、メタ・対面・シナジー・プロの採用傾向・プールから候補を出します。",
-    "startTitle": "始める",
-    "continueHint": "入力中のドラフトがある場合は、その続きから始まります。",
-    "solo": {
-      "title": "ソロ",
-      "description": "自分のロールを選んで、自分の枠に合う候補を見ます。"
-    },
-    "team": {
-      "title": "チーム",
-      "description": "ロールを決めずに、味方の空いているロールすべての候補を見ます。",
-      "start": "チームで始める"
-    },
-    "soloRole": "{role}で始める",
-    "statusTitle": "データの更新状況",
-    "statusLoadError": "更新状況を読み込めませんでした。",
-    "statusRetry": "再読み込み",
-    "patch": "現在のパッチ",
-    "patchUnknown": "未取得",
+  "status": {
+    "patch": "パッチ {version}",
+    "patchUnknown": "パッチ未取得",
+    "updated": "データ更新 {time}",
+    "updatedNone": "データ未更新",
+    "patchLabel": "現在のパッチ",
     "notUpdated": "未更新",
+    "loadError": "データの更新状況を取得できません",
+    "retry": "再読み込み",
+    "info": "情報",
+    "infoDescription": "データの更新状況と権利表記です。",
+    "dataTitle": "データの更新状況",
+    "legalTitle": "権利表記",
     "jobs": {
       "ddragon": "チャンピオン一覧",
       "opgg-meta": "メタ統計(ロール別)",
@@ -304,6 +294,9 @@
     }
   },
   "recommendation": {
+    "panel": "推薦パネル",
+    "resize": "推薦パネルの幅",
+    "resizeHint": "ドラッグか左右キーで幅を変更。ダブルクリックかEnterで閉じる",
     "title": "提案",
     "view": "表示する内容",
     "tabChampions": "チャンピオン",

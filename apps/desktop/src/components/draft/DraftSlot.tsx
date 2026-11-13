@@ -38,12 +38,8 @@ export function DraftSlot({
       aria-pressed={active}
       onClick={onSelect}
       className={cn(
-        "relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden border bg-background transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-        active && "border-gold bg-gold/15",
-        !active && suggested && "border-dashed",
-        !active && suggested && (turn.side === "blue" ? "border-side-blue" : "border-side-red"),
-        !active && !suggested && !champion && !championId && "border-dashed border-border",
-        !active && !suggested && (champion || championId) && "border-border",
+        "relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden bg-muted/40 transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+        active && "bg-gold/15",
         className,
       )}
     >
@@ -78,12 +74,17 @@ export function DraftSlot({
       ) : (
         <span className="text-xs text-muted-foreground">{index}</span>
       )}
-      {active ? (
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-10 border-[3px] border-gold"
-        />
-      ) : null}
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute inset-0 z-10",
+          active && "border-2 border-gold",
+          !active && suggested && "border",
+          !active &&
+            suggested &&
+            (turn.side === "blue" ? "border-side-blue/70" : "border-side-red/70"),
+        )}
+      />
     </button>
   );
 }
