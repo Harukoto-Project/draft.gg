@@ -17,6 +17,8 @@ import { createProRoute } from "./pro.js";
 import type { ProReader } from "./pro.js";
 import { createRecommendationsRoute } from "./recommendations.js";
 import type { RecommendationSource } from "./recommendations.js";
+import { createSnapshotRoute } from "./snapshot.js";
+import type { SnapshotSource } from "./snapshot.js";
 import { createStatusRoute } from "./status.js";
 import type { StatusReader } from "./status.js";
 import { createTeamsRoute } from "./teams.js";
@@ -28,6 +30,7 @@ export interface RouteDeps {
   allowedOrigin: string | null;
   champions: ChampionsReader;
   meta: MetaSource;
+  snapshot: SnapshotSource;
   recommendations: RecommendationSource;
   pro: ProReader;
   profiles: { store: ProfileStore; sync: PoolSync };
@@ -50,5 +53,6 @@ export function createRoutes(deps: RouteDeps) {
     .route("/champions", createChampionsRoute(deps.champions))
     .route("/meta", createMetaRoute(deps.meta))
     .route("/pro", createProRoute(deps.pro))
+    .route("/snapshot", createSnapshotRoute(deps.snapshot))
     .route("/recommendations", createRecommendationsRoute(deps.recommendations));
 }

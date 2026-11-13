@@ -42,6 +42,7 @@ export function createApp(deps: AppDeps) {
         listChampions: () => listChampions(db),
       },
       meta: deps.stats,
+      snapshot: deps.stats,
       recommendations: deps.stats,
       pro: { load: (query) => loadProChampions(db, query) },
       profiles: { store: createProfileStore(db), sync: deps.poolSync },
