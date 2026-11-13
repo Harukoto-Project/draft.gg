@@ -6,6 +6,9 @@ edition = "2021"
 license = "Apache-2.0"
 publish = false
 
+[workspace]
+members = ["crates/engine"]
+
 [lib]
 name = "draftgg_desktop_lib"
 crate-type = ["rlib", "cdylib", "staticlib"]
