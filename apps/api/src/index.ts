@@ -15,7 +15,6 @@ stats.start();
 
 const app = createApp({
   db,
-  auth: config.auth,
   stats,
   poolSync: createPoolSync({ getSnapshot: () => stats.getSnapshot() }),
 });

@@ -50,6 +50,13 @@
       "when": 1794027839602,
       "tag": "0006_drafts",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1794572135998,
+      "tag": "0007_drop_user_tables",
+      "breakpoints": true
     }
   ]
 }

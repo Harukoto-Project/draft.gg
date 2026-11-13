@@ -1,0 +1,11 @@
+[package]
+name = "draftgg-engine"
+version = "0.0.0"
+description = "Draft.GG の提案計算(DB・HTTP・Tauri に依存しない純粋なロジック)"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
