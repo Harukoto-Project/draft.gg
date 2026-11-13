@@ -7,7 +7,7 @@ license = "Apache-2.0"
 publish = false
 
 [workspace]
-members = ["crates/engine"]
+members = ["crates/engine", "crates/snapshot", "crates/storage"]
 
 [lib]
 name = "draftgg_desktop_lib"
@@ -17,6 +17,10 @@ crate-type = ["rlib", "cdylib", "staticlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+draftgg-engine = { path = "crates/engine" }
+draftgg-snapshot = { path = "crates/snapshot" }
+draftgg-storage = { path = "crates/storage" }
+serde = { version = "1", features = ["derive"] }
 tauri = { version = "2", features = [] }
 tauri-plugin-http = "2"
 tauri-plugin-snap-layout = "1"
