@@ -5,10 +5,8 @@ node_modules/
 
 # build outputs
 dist/
-.next/
 .turbo/
 *.tsbuildinfo
-next-env.d.ts
 
 # env (秘密情報は .env にだけ書く。キー名は .env.example に置く)
 .env
@@ -28,4 +26,7 @@ data/
 .DS_Store
 Thumbs.db
 
-.open-next/
+
+# Rust / Tauri
+target/
+apps/desktop/src-tauri/gen/

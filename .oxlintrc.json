@@ -1,15 +1,15 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "unicorn", "oxc", "react", "nextjs"],
+  "plugins": ["typescript", "unicorn", "oxc", "react"],
   "categories": {
     "correctness": "error"
   },
   "ignorePatterns": [
     "**/dist/**",
-    "**/.next/**",
     "**/.turbo/**",
     "**/node_modules/**",
-    "apps/web/src/components/ui/**",
-    "apps/web/src/hooks/use-mobile.ts"
+    "apps/desktop/src/components/ui/**",
+    "**/src-tauri/target/**",
+    "**/src-tauri/gen/**"
   ]
 }

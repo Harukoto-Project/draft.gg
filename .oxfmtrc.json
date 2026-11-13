@@ -3,9 +3,11 @@
   "printWidth": 100,
   "ignorePatterns": [
     "**/dist/**",
-    "**/.next/**",
     "**/.turbo/**",
     "pnpm-lock.yaml",
-    "packages/db/drizzle/**"
+    "packages/db/drizzle/**",
+    "**/src-tauri/target/**",
+    "**/src-tauri/gen/**",
+    "**/tests/golden/**"
   ]
 }
