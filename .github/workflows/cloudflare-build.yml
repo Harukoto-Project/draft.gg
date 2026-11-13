@@ -1,7 +1,6 @@
 name: cloudflare-build
 
 # Workers 向けのビルドが通ることを確認する。デプロイはしない。
-# OpenNext は Windows ネイティブでビルドできないため、Linux の CI で確かめる。
 on:
   pull_request:
   push:
@@ -25,15 +24,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # api と web は packages/ の dist を参照する
+      # api は packages/ の dist を参照する
       - name: 共有パッケージをビルド
         run: pnpm --filter "./packages/*" build
 
       - name: api(Workers)のバンドルを確認
         run: pnpm --filter @draftgg/api exec wrangler deploy --dry-run --outdir dist-worker
-
-      - name: web(OpenNext)をビルド
-        run: pnpm --filter @draftgg/web exec opennextjs-cloudflare build
-
-      - name: web(Workers)のバンドルを確認
-        run: pnpm --filter @draftgg/web exec wrangler deploy --dry-run --outdir dist-worker

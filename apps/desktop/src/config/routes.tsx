@@ -2,8 +2,10 @@ import type { ReactNode } from "react";
 import { Navigate } from "react-router";
 
 import { DraftPage } from "@/pages/DraftPage";
+import { ProfilesPage } from "@/pages/ProfilesPage";
 import { ProPage } from "@/pages/ProPage";
 import { SettingsPage } from "@/pages/SettingsPage";
+import { TeamsPage } from "@/pages/TeamsPage";
 
 export interface AppRoute {
   path: string;
@@ -16,5 +18,7 @@ export const APP_ROUTES: readonly AppRoute[] = [
   { path: "/", element: <Navigate to="/draft" replace /> },
   { path: "/draft", element: <DraftPage /> },
   { path: "/pro", element: <ProPage /> },
+  { path: "/profiles", element: <ProfilesPage /> },
+  { path: "/teams", element: <TeamsPage /> },
   { path: "/settings", element: <SettingsPage /> },
 ];

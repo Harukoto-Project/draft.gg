@@ -1,7 +1,4 @@
 import {
-  createDraftStore,
-  createProfileStore,
-  createTeamStore,
   getCurrentPatch,
   listChampions,
   listLastSuccessfulRuns,
@@ -11,18 +8,14 @@ import type { Database } from "@draftgg/db";
 import { Hono } from "hono";
 
 import type { MetaSource } from "../../routes/meta.js";
-import type { RecommendationSource } from "../../routes/recommendations.js";
 import { createRoutes } from "../../routes/index.js";
-import { createAuthGateway } from "../auth/index.js";
-import type { AuthConfig } from "../config/index.js";
+import type { SnapshotSource } from "../../routes/snapshot.js";
 import type { PoolSync } from "../pool-sync/index.js";
 
 export interface AppDeps {
   db: Database;
-  /** null のときはログインなしで動く */
-  auth: AuthConfig | null;
-  /** 提案計算用の統計(Node ではメモリに常駐、Workers では isolate ごとのキャッシュ) */
-  stats: MetaSource & RecommendationSource;
+  /** 統計スナップショット(Node ではメモリに常駐、Workers では isolate ごとのキャッシュ) */
+  stats: MetaSource & SnapshotSource;
   poolSync: PoolSync;
 }
 
@@ -35,19 +28,14 @@ export function createApp(deps: AppDeps) {
   const app = new Hono().route(
     "/api",
     createRoutes({
-      auth: deps.auth ? createAuthGateway(db, deps.auth) : null,
-      allowedOrigin: deps.auth?.baseUrl ?? null,
       champions: {
         getCurrentPatch: () => getCurrentPatch(db),
         listChampions: () => listChampions(db),
       },
       meta: deps.stats,
       snapshot: deps.stats,
-      recommendations: deps.stats,
       pro: { load: (query) => loadProChampions(db, query) },
-      profiles: { store: createProfileStore(db), sync: deps.poolSync },
-      teams: { store: createTeamStore(db) },
-      drafts: { store: createDraftStore(db) },
+      poolSync: deps.poolSync,
       status: {
         getCurrentPatch: () => getCurrentPatch(db),
         listLastSuccessfulRuns: (jobs) => listLastSuccessfulRuns(db, jobs),

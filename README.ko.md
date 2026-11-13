@@ -2,14 +2,14 @@
 
 # Draft.GG
 
-리그 오브 레전드의 드래프트(밴 / 픽)를 돕는 웹 도구입니다.<br>
+리그 오브 레전드의 드래프트(밴 / 픽)를 돕는 데스크톱 앱(Windows / macOS)입니다.<br>
 통계 사이트의 수치와 프로 경기의 픽·밴을 조합하여, "다음에 무엇을 픽 / 밴해야 하는지"를 이유와 함께 제안합니다.
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D24-339933.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)
 
-[개요](#개요) · [주요 기능](#주요-기능) · [동작 방식](#동작-방식) · [설치](#설치) · [설정](#설정) · [개발](#개발) · [기여](#기여) · [라이선스](#라이선스)
+[개요](#개요) · [주요 기능](#주요-기능) · [설치](#설치) · [동작 방식](#동작-방식) · [개발 환경 설정](#개발-환경-설정) · [설정](#설정) · [개발](#개발) · [기여](#기여) · [라이선스](#라이선스)
 
 [日本語](README.md) · [English](README.en.md) · [한국어](README.ko.md)
 
@@ -22,7 +22,7 @@
 Draft.GG는 소환사의 협곡(5v5) 드래프트를 돕는 도구입니다. 아군과 상대 팀의 밴·픽을 직접 입력하면, 현재 상황에 맞춰 픽과 밴 후보를 제안합니다.
 
 - 솔로 / 듀오(랭크 게임)와 5인 팀(클래시, 스크림, 대회)을 모두 상정합니다. 팀 사용 시에는 한 명이 조작하고 화면을 공유하는 방식입니다.
-- 입력은 웹에서의 수동 입력만 지원합니다. LoL 클라이언트와는 연동하지 않습니다.
+- 입력은 수동 입력만 지원합니다. LoL 클라이언트와는 연동하지 않습니다.
 - 승패를 단정하는 도구가 아닙니다. 판단 자료로서 수치와 이유를 제시합니다.
 
 ## 주요 기능
@@ -46,7 +46,7 @@ Draft.GG는 소환사의 협곡(5v5) 드래프트를 돕는 도구입니다. 아
 | 풀     | 플레이어가 잘 다루는 챔피언                      |
 | 구성   | 아군의 피해 유형(AD / AP) 편중과 프런트라인 유무 |
 
-경기 수가 적은 요소는 이유에 "샘플 부족"으로 표시합니다. 가중치는 설정 화면(`/settings`)에서 조정할 수 있으며 브라우저에 저장됩니다.
+경기 수가 적은 요소는 이유에 "샘플 부족"으로 표시합니다. 가중치는 설정 화면(`/settings`)에서 조정할 수 있으며 앱에 저장됩니다.
 
 ### 기타 화면
 
@@ -59,43 +59,59 @@ Draft.GG는 소환사의 협곡(5v5) 드래프트를 돕는 도구입니다. 아
 | `/teams`    | 5명의 등록과 역할 배정                                                 |
 | `/settings` | 제안 가중치 조정                                                       |
 
-Discord 로그인은 선택 사항입니다. 로그인하지 않으면 풀·팀·드래프트는 브라우저에 저장됩니다.
+로그인은 필요하지 않습니다. 플레이어·팀·저장한 드래프트는 사용 중인 PC의 앱 데이터 폴더에만 저장되며, 서버로 전송되지 않습니다.
+
+## 설치
+
+[Releases](https://github.com/Harukoto-Project/draft.gg/releases)에서 사용 중인 OS(Windows / macOS)용 설치 파일을 내려받아 실행합니다.
+
+> [!NOTE]
+> 설치 파일에는 서명이 되어 있지 않습니다. 처음 실행할 때 Windows SmartScreen이나 macOS Gatekeeper가 경고를 표시합니다.
+
+통계 데이터는 실행할 때 자동으로 가져와 앱에 저장합니다. 가져오지 못했을 때도 이전에 저장한 데이터로 제안할 수 있습니다.
 
 ## 동작 방식
 
-통계는 정기 배치로 MySQL에 가져오며, 제안은 요청 시점에 외부 서비스에 문의하지 않고 가져온 데이터만으로 계산합니다.
+통계는 정기 배치로 MySQL에 가져오며, api가 하나의 스냅샷으로 묶어 제공합니다. 앱은 그것을 가져와 저장하고, 제안 계산은 앱 안(Rust)에서 수행합니다. 제안할 때 외부 서비스에 문의하지 않습니다.
+
+플레이어·팀·저장한 드래프트는 앱 데이터 폴더(`userdata.json`)에만 저장하며, 서버로 전송하지 않습니다. 서버를 사용하는 것은 통계를 가져올 때와 OP.GG에서 풀을 가져올 때(로그인 불필요, IP별 횟수 제한)뿐입니다.
 
 ```mermaid
 flowchart LR
   ext["외부 데이터<br/>Data Dragon / OP.GG / Oracle's Elixir / Leaguepedia"] --> worker
   worker --> db[("MySQL")]
   db --> api
-  browser["브라우저"] --> web
-  web -->|"/api"| api
+  api -->|"/api/snapshot<br/>/api/pool-sync"| app["데스크톱 앱<br/>(Tauri)"]
+  app --> local[("로컬 저장<br/>userdata.json")]
 ```
 
-| 위치                    | 역할                                                |
-| ----------------------- | --------------------------------------------------- |
-| `apps/web`              | Next.js(App Router) 화면                            |
-| `apps/api`              | Hono 기반 REST API, 인증, 제안 계산                 |
-| `apps/worker`           | 정기 배치. 외부 데이터 수집과 집계                  |
-| `packages/engine`       | 제안 점수 계산(DB·HTTP에 의존하지 않는 순수 함수)   |
-| `packages/db`           | MySQL 연결, Drizzle 스키마와 마이그레이션           |
-| `packages/data-sources` | 외부 데이터 어댑터                                  |
-| `packages/shared`       | 타입, Zod 스키마, 드래프트 진행 규칙 등의 공통 정의 |
-| `deploy/`               | systemd 유닛 템플릿(미검증. 환경에 맞게 조정하세요) |
+| 위치                                     | 역할                                                                       |
+| ---------------------------------------- | -------------------------------------------------------------------------- |
+| `apps/desktop`                           | Tauri 2 데스크톱 앱. 화면은 Vite + React, Rust 쪽은 `src-tauri/`           |
+| `apps/desktop/src-tauri/crates/engine`   | 제안 점수 계산(I/O와 Tauri에 의존하지 않음)                                |
+| `apps/desktop/src-tauri/crates/snapshot` | 스냅샷 가져오기(ETag)와 캐시                                               |
+| `apps/desktop/src-tauri/crates/storage`  | 플레이어·팀·저장한 드래프트의 로컬 저장                                    |
+| `apps/api`                               | Hono 읽기 전용 API(snapshot / meta / pro / champions / status)와 pool-sync |
+| `apps/worker`                            | 정기 배치. 외부 데이터 가져오기와 집계                                     |
+| `packages/db`                            | MySQL 연결, Drizzle 스키마와 마이그레이션                                  |
+| `packages/data-sources`                  | 외부 데이터 어댑터                                                         |
+| `packages/shared`                        | 타입, Zod 스키마, 드래프트 진행 규칙 등의 공통 정의                        |
+| `deploy/`                                | api·worker의 systemd 유닛 템플릿(미검증. 환경에 맞게 조정하세요)           |
 
 ### 기술 스택
 
-TypeScript / pnpm workspaces + Turborepo / Next.js / Tailwind CSS / TanStack Query / Hono / Drizzle ORM(MySQL) / Better Auth / Vitest / Oxlint·Oxfmt
+Tauri 2 / Rust / TypeScript / React / Vite / Tailwind CSS / TanStack Query / Hono / Drizzle ORM(MySQL) / pnpm workspaces + Turborepo / Vitest / Oxlint·Oxfmt
 
-## 설치
+## 개발 환경 설정
+
+앱을 개발할 때의 절차입니다. 사용만 하려면 [설치](#설치)를 참고하세요.
 
 ### 요구 사항
 
 - Node.js 24 이상
 - pnpm(`package.json`의 `packageManager`에 적힌 버전)
-- MySQL(`utf8mb4` 문자 집합으로 만든 데이터베이스)
+- Rust(stable)와 OS별 Tauri 사전 요구 도구([Tauri 사전 요구 사항](https://v2.tauri.app/start/prerequisites/))
+- MySQL(문자 인코딩이 `utf8mb4`인 데이터베이스). api / worker를 실행할 때 필요합니다
 
 ### 절차
 
@@ -117,13 +133,17 @@ TypeScript / pnpm workspaces + Turborepo / Next.js / Tailwind CSS / TanStack Que
    pnpm --filter @draftgg/db db:migrate
    ```
 
-4. web / api / worker를 시작합니다.
+4. api / worker를 실행합니다. api는 `127.0.0.1:3001`에서 대기합니다.
 
    ```bash
-   pnpm dev
+   pnpm --filter @draftgg/api --filter @draftgg/worker dev
    ```
 
-   web은 `http://localhost:3000`, api는 `127.0.0.1:3001`에서 대기합니다. 브라우저의 API 호출은 web이 동일 출처의 `/api`로 중계합니다.
+5. 다른 터미널에서 앱을 실행합니다. 연결 대상 api는 기본적으로 `http://127.0.0.1:3001`입니다.
+
+   ```bash
+   pnpm --filter @draftgg/desktop tauri:dev
+   ```
 
 통계는 worker가 가져옵니다. 챔피언 목록(Data Dragon)은 시작 시와 매일 정해진 시각에, OP.GG와 프로 경기 통계는 매일 정해진 시각의 작업으로 가져오므로 처음에는 통계가 비어 있을 수 있습니다.
 
@@ -131,18 +151,14 @@ TypeScript / pnpm workspaces + Turborepo / Next.js / Tailwind CSS / TanStack Que
 
 환경 변수는 저장소 루트의 `.env`에서 설정합니다. 키 이름은 `.env.example`에 있습니다.
 
-| 변수                                                    | 내용                                                                                                                             |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`                                          | MySQL 접속 문자열(`mysql://<사용자>:<비밀번호>@<호스트>:<포트>/<데이터베이스 이름>`). api / worker / 마이그레이션이 사용         |
-| `API_HOST` / `API_PORT`                                 | api 대기 주소. `API_HOST`가 `127.0.0.1`(또는 `::1`)이 아니면 시작 시 오류가 발생합니다                                           |
-| `WEB_PORT`                                              | web 대기 포트(운영 환경의 `next start`가 참조)                                                                                   |
-| `BETTER_AUTH_URL` / `BETTER_AUTH_SECRET`                | Discord 로그인용. 공개 URL과 32자 이상의 무작위 문자열                                                                           |
-| `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET`           | Discord 로그인용. Developer Portal의 OAuth2에서 발급하고, Redirects에 `<BETTER_AUTH_URL>/api/auth/callback/discord`를 등록합니다 |
-| `ORACLES_ELIXIR_CSV_URL`                                | 선택. Oracle's Elixir CSV를 직접 링크로 바꿀 때만 설정                                                                           |
-| `LEAGUEPEDIA_BOT_USERNAME` / `LEAGUEPEDIA_BOT_PASSWORD` | 선택. Leaguepedia 봇 인증 정보. 설정하지 않으면 픽 순서 보완을 건너뜁니다                                                        |
+| 변수                                                    | 내용                                                                                                                     |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `DATABASE_URL`                                          | MySQL 접속 문자열(`mysql://<사용자>:<비밀번호>@<호스트>:<포트>/<데이터베이스 이름>`). api / worker / 마이그레이션이 사용 |
+| `API_HOST` / `API_PORT`                                 | api 대기 주소. `API_HOST`가 `127.0.0.1`(또는 `::1`)이 아니면 시작 시 오류가 발생합니다                                   |
+| `ORACLES_ELIXIR_CSV_URL`                                | 선택. Oracle's Elixir CSV를 직접 링크로 바꿀 때만 설정                                                                   |
+| `LEAGUEPEDIA_BOT_USERNAME` / `LEAGUEPEDIA_BOT_PASSWORD` | 선택. Leaguepedia 봇 인증 정보. 설정하지 않으면 픽 순서 보완을 건너뜁니다                                                |
 
-> [!NOTE]
-> Discord 로그인용 변수 4개가 모두 비어 있으면 로그인 없이 동작하고, 일부만 설정하면 시작 시 오류가 발생합니다.
+개발 중에 앱이 연결하는 api의 URL은 환경 변수 `DRAFTGG_API_URL`로 바꿀 수 있습니다(기본값 `http://127.0.0.1:3001`). 릴리스 빌드에서는 GitHub 저장소 변수 `DRAFTGG_API_URL`의 값을 사용합니다.
 
 ## 개발
 
@@ -156,6 +172,12 @@ CI는 사용하지 않으므로, 변경을 제출하기 전에 로컬에서 확�
 | 포맷 / 포맷 확인만 | `pnpm format` / `pnpm format:check`     |
 | 빌드               | `pnpm build`                            |
 | 마이그레이션 생성  | `pnpm --filter @draftgg/db db:generate` |
+
+### 릴리스
+
+1. `apps/desktop/src-tauri/tauri.conf.json`과 `Cargo.toml`의 `version`을 올립니다.
+2. 저장소 변수 `DRAFTGG_API_URL`에 api의 공개 URL(https)을 등록합니다(처음 한 번만).
+3. `v<버전>` 태그를 만들어 푸시합니다. GitHub Actions가 Windows와 macOS 설치 파일을 만들어 Releases에 초안으로 올립니다. 내용을 확인한 뒤 공개하세요.
 
 ## 기여
 
