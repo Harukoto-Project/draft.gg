@@ -3,6 +3,9 @@ import type { DraftFormat } from "@draftgg/shared";
 import { PanelRightClose, PanelRightOpen } from "lucide-react";
 import { useState } from "react";
 
+import { SaveDraftDialog } from "@/components/draft/SaveDraftDialog";
+import { SavedDraftsDialog } from "@/components/draft/SavedDraftsDialog";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +28,8 @@ export function DraftToolbar() {
   const inspector = useInspectorLayout();
   const [pendingFormat, setPendingFormat] = useState<DraftFormat | null>(null);
   const [resetOpen, setResetOpen] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [savedOpen, setSavedOpen] = useState(false);
   const dirty = draftHasChampion(state);
 
   function requestFormat(value: string) {
@@ -88,11 +93,19 @@ export function DraftToolbar() {
           )}
           {ja.recommendation.panel}
         </Button>
+        <Button variant="outline" size="sm" disabled={!dirty} onClick={() => setSaveOpen(true)}>
+          {ja.drafts.save}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setSavedOpen(true)}>
+          {ja.drafts.saved}
+        </Button>
         <Button variant="outline" size="sm" disabled={!dirty} onClick={() => setResetOpen(true)}>
           {ja.draft.reset}
         </Button>
       </div>
 
+      <SaveDraftDialog open={saveOpen} onOpenChange={setSaveOpen} />
+      <SavedDraftsDialog open={savedOpen} onOpenChange={setSavedOpen} />
       <AlertDialog
         open={pendingFormat !== null}
         onOpenChange={(open) => !open && setPendingFormat(null)}
