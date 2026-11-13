@@ -790,6 +790,7 @@ version = "0.0.0"
 dependencies = [
  "draftgg-engine",
  "draftgg-snapshot",
+ "draftgg-storage",
  "serde",
  "tauri",
  "tauri-build",
@@ -815,6 +816,18 @@ dependencies = [
  "serde_json",
  "tempfile",
  "tokio",
+]
+
+[[package]]
+name = "draftgg-storage"
+version = "0.0.0"
+dependencies = [
+ "chrono",
+ "draftgg-engine",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "uuid",
 ]
 
 [[package]]
