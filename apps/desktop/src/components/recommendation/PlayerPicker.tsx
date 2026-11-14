@@ -23,7 +23,7 @@ export function PlayerPicker({
         id={id}
         value={value ?? ""}
         onChange={(event) => onChange(event.target.value === "" ? null : event.target.value)}
-        className="h-7 max-w-48 rounded-lg border border-input bg-background px-2 text-sm text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="h-7 max-w-48 rounded-xs border border-input bg-background px-2 text-sm text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <option value="">{ja.recommendation.playerNone}</option>
         {profiles.map((profile) => (

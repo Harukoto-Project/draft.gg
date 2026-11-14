@@ -5,12 +5,15 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-heading: var(--font-sans);
-  --font-sans: "Noto Sans JP Variable", ui-sans-serif, system-ui, sans-serif;
-  /* ウィンドウ枠(タイトルバー)用。Windows は Segoe UI Variable、日本語は同梱の Noto Sans JP に落とす */
-  --font-chrome:
-    "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", -apple-system,
-    "Noto Sans JP Variable", sans-serif;
+  /* 本文。Segoe UI Variable(Windows)→ 日本語は Yu Gothic UI か同梱の Noto Sans JP に落とす */
+  --font-sans:
+    "Segoe UI Variable Text", "Segoe UI", -apple-system, "Yu Gothic UI", "Noto Sans JP Variable",
+    ui-sans-serif, sans-serif;
+  --font-heading:
+    "Segoe UI Variable Display", "Segoe UI Variable Text", "Segoe UI", -apple-system,
+    "Yu Gothic UI", "Noto Sans JP Variable", sans-serif;
+  /* ウィンドウ枠(タイトルバー・ステータスバー)用。本文と同じ並びにして、枠と中身で書体を変えない */
+  --font-chrome: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -42,50 +45,63 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --color-masthead: var(--masthead);
-  --color-masthead-foreground: var(--masthead-foreground);
-  --color-gold: var(--gold);
+  --color-selection: var(--selection);
+  --color-selection-foreground: var(--selection-foreground);
   --color-side-blue: var(--side-blue);
   --color-side-red: var(--side-red);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* 角丸は全て rounded-xs(2px)に統一する。components/ui/ など生成物の rounded-sm/md/lg/xl も同じ値にする */
+  --radius-xs: calc(var(--radius) * 0.25);
+  --radius-sm: var(--radius-xs);
+  --radius-md: var(--radius-xs);
+  --radius-lg: var(--radius-xs);
+  --radius-xl: var(--radius-xs);
+  --radius-2xl: var(--radius-xs);
+  --radius-3xl: var(--radius-xs);
+  --radius-4xl: var(--radius-xs);
 }
 
+/*
+ * 色は Fluent 2 の中立色と、アクセントだけにする。
+ * - アクセントは Windows の設定色(CSS の AccentColor)。選択・フォーカス・進行表示にだけ使う
+ * - 青と赤はドラフトのチーム表示専用。選択や警告の色には使わない
+ * - 下地は Mica が使えるとき(html[data-backdrop="mica"])は透明にして OS の壁紙色を通し、
+ *   使えないときは Fluent の単色にする。カードなどの面は、下地の上に重ねる半透明の層にする
+ */
 :root {
-  --background: #eef2f6;
-  --foreground: #1c2430;
-  --card: #ffffff;
-  --card-foreground: #1c2430;
-  --popover: #ffffff;
-  --popover-foreground: #1c2430;
-  --primary: #c8aa6e;
-  --primary-foreground: #1a1408;
-  --secondary: #e4eaf1;
-  --secondary-foreground: #1c2430;
-  --muted: #e4eaf1;
-  --muted-foreground: #526070;
-  --accent: #e4eaf1;
-  --accent-foreground: #1c2430;
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: #d3dbe4;
-  --input: #d3dbe4;
-  --ring: #8a6a2f;
-  --masthead: #15202b;
-  --masthead-foreground: #f4efe4;
-  --gold: #c8aa6e;
-  --side-blue: #2f6fad;
-  --side-red: #b23b32;
+  color-scheme: light;
+  --radius: 0.5rem;
+
+  /* 単色の下地(Mica なし) */
+  --background: #f3f3f3;
+  --foreground: #1a1a1a;
+  --card: #fbfbfb;
+  --card-foreground: #1a1a1a;
+  --popover: #fcfcfc;
+  --popover-foreground: #1a1a1a;
+  --muted: #eeeeee;
+  --muted-foreground: #5c5c5c;
+  --secondary: #eeeeee;
+  --secondary-foreground: #1a1a1a;
+  --accent: #e8e8e8;
+  --accent-foreground: #1a1a1a;
+  --border: #e0e0e0;
+  --input: #c9c9c9;
+  --destructive: #c42b1c;
+
+  --selection: AccentColor;
+  --selection-foreground: AccentColorText;
+  --primary: var(--selection);
+  --primary-foreground: var(--selection-foreground);
+  --ring: var(--selection);
+
+  --side-blue: #1f6fc4;
+  --side-red: #c4392f;
+
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.125rem;
   --sidebar: #f4f4f5;
   --sidebar-foreground: #27272a;
   --sidebar-primary: #27272a;
@@ -97,34 +113,26 @@
 }
 
 .dark {
-  --background: #121820;
-  --foreground: #e8e2d4;
-  --card: #1b2430;
-  --card-foreground: #e8e2d4;
-  --popover: #1b2430;
-  --popover-foreground: #e8e2d4;
-  --primary: #c8aa6e;
-  --primary-foreground: #1a1408;
-  --secondary: #243040;
-  --secondary-foreground: #e8e2d4;
-  --muted: #243040;
-  --muted-foreground: #a3adba;
-  --accent: #243040;
-  --accent-foreground: #e8e2d4;
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: #314052;
-  --input: #314052;
-  --ring: #c8aa6e;
-  --masthead: #0e141c;
-  --masthead-foreground: #f4efe4;
-  --gold: #c8aa6e;
-  --side-blue: #6ea2d6;
-  --side-red: #e07a72;
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  color-scheme: dark;
+  --background: #202020;
+  --foreground: #f5f5f5;
+  --card: #2b2b2b;
+  --card-foreground: #f5f5f5;
+  --popover: #2c2c2c;
+  --popover-foreground: #f5f5f5;
+  --muted: #333333;
+  --muted-foreground: #a6a6a6;
+  --secondary: #333333;
+  --secondary-foreground: #f5f5f5;
+  --accent: #383838;
+  --accent-foreground: #f5f5f5;
+  --border: #3d3d3d;
+  --input: #5a5a5a;
+  --destructive: #ff6f61;
+
+  --side-blue: #5aa2f0;
+  --side-red: #f0766b;
+
   --sidebar: #18181b;
   --sidebar-foreground: #f4f4f5;
   --sidebar-primary: #f4f4f5;
@@ -133,6 +141,25 @@
   --sidebar-accent-foreground: #f4f4f5;
   --sidebar-border: #3f3f46;
   --sidebar-ring: #a1a1aa;
+}
+
+/* Mica: 下地を透明にして、面は半透明の層(Fluent の LayerFill / CardBackground)に差し替える */
+html[data-backdrop="mica"] {
+  --background: transparent;
+  --card: rgb(255 255 255 / 0.55);
+  --muted: rgb(0 0 0 / 0.04);
+  --secondary: rgb(0 0 0 / 0.04);
+  --accent: rgb(0 0 0 / 0.06);
+  --border: rgb(0 0 0 / 0.08);
+}
+
+html.dark[data-backdrop="mica"] {
+  --background: transparent;
+  --card: rgb(255 255 255 / 0.04);
+  --muted: rgb(255 255 255 / 0.06);
+  --secondary: rgb(255 255 255 / 0.06);
+  --accent: rgb(255 255 255 / 0.08);
+  --border: rgb(255 255 255 / 0.08);
 }
 
 @layer base {
@@ -144,7 +171,9 @@
     height: 100%;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-sm text-foreground;
+    /* Segoe UI Variable は可変軸を持つので、見出しは光学サイズに任せる */
+    font-optical-sizing: auto;
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
@@ -152,6 +181,11 @@
   }
   html {
     @apply font-sans;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-heading;
   }
 }
 

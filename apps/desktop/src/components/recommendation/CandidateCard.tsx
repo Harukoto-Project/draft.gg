@@ -26,7 +26,7 @@ export function CandidateCard({
 }) {
   const score = Math.round(candidate.score * 100);
   return (
-    <li className="bg-muted/40">
+    <li className="border-b border-border/50 last:border-b-0">
       <button
         type="button"
         disabled={!canPick}
@@ -37,13 +37,13 @@ export function CandidateCard({
         })}
         onClick={() => onPick(candidate.championId)}
         className={cn(
-          "flex w-full min-w-0 cursor-pointer items-center gap-3 p-2 text-left transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:hover:bg-transparent",
+          "flex w-full min-w-0 cursor-pointer items-center gap-3 p-2 text-left transition-colors outline-none hover:bg-foreground/[0.05] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring disabled:cursor-not-allowed disabled:hover:bg-transparent",
         )}
       >
         <span className="w-4 shrink-0 text-center text-xs text-muted-foreground tabular-nums">
           {rank}
         </span>
-        <span className="relative size-10 shrink-0 overflow-hidden bg-muted">
+        <span className="relative size-10 shrink-0 overflow-hidden rounded-xs bg-muted">
           {champion ? <ChampionIcon champion={champion} /> : null}
         </span>
         <span className="flex min-w-0 flex-1 items-center gap-2">
