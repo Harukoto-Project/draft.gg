@@ -96,10 +96,10 @@ export function DraftToolbar() {
         <Button variant="outline" size="sm" disabled={!dirty} onClick={() => setSaveOpen(true)}>
           {ja.drafts.save}
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setSavedOpen(true)}>
+        <Button variant="ghost" size="sm" onClick={() => setSavedOpen(true)}>
           {ja.drafts.saved}
         </Button>
-        <Button variant="outline" size="sm" disabled={!dirty} onClick={() => setResetOpen(true)}>
+        <Button variant="ghost" size="sm" disabled={!dirty} onClick={() => setResetOpen(true)}>
           {ja.draft.reset}
         </Button>
       </div>

@@ -26,7 +26,7 @@ export function CandidateCard({
 }) {
   const score = Math.round(candidate.score * 100);
   return (
-    <li className="overflow-hidden rounded-xs border bg-muted/40">
+    <li className="border-b border-border/50 last:border-b-0">
       <button
         type="button"
         disabled={!canPick}
