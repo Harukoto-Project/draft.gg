@@ -46,7 +46,7 @@ export function AppTitleBar() {
                   aria-keyshortcuts={`Control+${index + 1} Meta+${index + 1}`}
                   title={`${item.label} (${modifierKeyLabel()}${index + 1})`}
                   className={cn(
-                    "relative flex h-7 items-center rounded-md px-3 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                    "relative flex h-7 items-center rounded-sm px-3 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                     current
                       ? "bg-foreground/[0.06] font-medium text-foreground"
                       : "text-foreground/70 hover:bg-foreground/[0.05] hover:text-foreground",

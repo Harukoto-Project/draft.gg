@@ -49,14 +49,14 @@
   --color-selection-foreground: var(--selection-foreground);
   --color-side-blue: var(--side-blue);
   --color-side-red: var(--side-red);
-  /* Fluent: コントロール 4px、コンテナ 8px(radius-md が 4px、radius-lg が 8px になる) */
+  /* 角丸は全て rounded-sm(4px)に統一する。components/ui/ など生成物の rounded-md/lg/xl も同じ値にする */
   --radius-sm: calc(var(--radius) * 0.5);
-  --radius-md: calc(var(--radius) * 0.5);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.5);
-  --radius-2xl: calc(var(--radius) * 2);
-  --radius-3xl: calc(var(--radius) * 2.5);
-  --radius-4xl: calc(var(--radius) * 3);
+  --radius-md: var(--radius-sm);
+  --radius-lg: var(--radius-sm);
+  --radius-xl: var(--radius-sm);
+  --radius-2xl: var(--radius-sm);
+  --radius-3xl: var(--radius-sm);
+  --radius-4xl: var(--radius-sm);
 }
 
 /*

@@ -47,7 +47,7 @@ export function PickCard({
   return (
     <div
       className={cn(
-        "group relative h-full min-h-0 min-w-0 overflow-hidden rounded-lg border bg-muted transition-colors",
+        "group relative h-full min-h-0 min-w-0 overflow-hidden rounded-sm border bg-muted transition-colors",
         active && "border-selection ring-2 ring-selection",
         !active &&
           suggested &&
@@ -66,7 +66,7 @@ export function PickCard({
         aria-label={name ? `${label} ${name}` : label}
         aria-pressed={active}
         onClick={onSelect}
-        className="absolute inset-0 cursor-pointer rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="absolute inset-0 cursor-pointer rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
       <div className="pointer-events-none relative flex h-full flex-col justify-between p-1.5">
         <div className="flex items-start justify-between gap-1">
@@ -95,7 +95,7 @@ export function PickCard({
             <button
               type="button"
               onClick={onClear}
-              className="pointer-events-auto w-fit cursor-pointer rounded-md bg-black/60 px-1.5 py-0.5 text-xs text-white outline-none hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-ring"
+              className="pointer-events-auto w-fit cursor-pointer rounded-sm bg-black/60 px-1.5 py-0.5 text-xs text-white outline-none hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-ring"
             >
               {ja.draft.clear}
             </button>

@@ -21,7 +21,7 @@ export function DraftScreenSkeleton() {
 
 function SideSkeleton() {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border p-3">
+    <div className="flex flex-col gap-2 rounded-sm border p-3">
       <div className="flex items-center justify-between">
         <Skeleton className="h-5 w-16" />
         <Skeleton className="h-8 w-40" />

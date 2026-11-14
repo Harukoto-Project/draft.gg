@@ -135,11 +135,11 @@ function ChampionResults({
                   aria-label={used ? `${champion.nameJa}、${ja.draft.taken}` : champion.nameJa}
                   onClick={() => onPick(champion.id)}
                   className={cn(
-                    "flex min-w-0 cursor-pointer flex-col items-center gap-1 rounded-lg p-1.5 outline-none transition-colors hover:bg-foreground/[0.06] focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed",
+                    "flex min-w-0 cursor-pointer flex-col items-center gap-1 rounded-sm p-1.5 outline-none transition-colors hover:bg-foreground/[0.06] focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed",
                     used && "opacity-40",
                   )}
                 >
-                  <span className="relative size-14 overflow-hidden rounded-md">
+                  <span className="relative size-14 overflow-hidden rounded-sm">
                     <ChampionIcon champion={champion} />
                   </span>
                   <span className="w-full truncate text-xs text-foreground">{champion.nameJa}</span>

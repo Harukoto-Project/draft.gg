@@ -116,7 +116,7 @@ export function ProfileForm({
             id={ids.region}
             value={region}
             onChange={(event) => setRegion(event.target.value as RiotRegion | "")}
-            className="h-8 rounded-lg border border-input bg-background px-2 text-sm text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="h-8 rounded-sm border border-input bg-background px-2 text-sm text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             <option value="">{ja.profiles.form.regionNone}</option>
             {RIOT_REGIONS.map((item) => (

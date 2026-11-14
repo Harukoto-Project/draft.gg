@@ -38,7 +38,7 @@ export function DraftSlot({
       aria-pressed={active}
       onClick={onSelect}
       className={cn(
-        "relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden rounded-md bg-muted/60 transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+        "relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden rounded-sm bg-muted/60 transition-colors focus-visible:ring-2 focus-visible:ring-ring",
         active && "bg-selection/15",
         className,
       )}
@@ -77,7 +77,7 @@ export function DraftSlot({
       <span
         aria-hidden="true"
         className={cn(
-          "pointer-events-none absolute inset-0 z-10 rounded-md",
+          "pointer-events-none absolute inset-0 z-10 rounded-sm",
           active && "border-2 border-selection",
           !active && suggested && "border",
           !active &&
