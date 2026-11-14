@@ -26,7 +26,7 @@ export function DraftSide({
   return (
     <section
       data-side={side}
-      className={cn("min-w-0 overflow-hidden rounded-sm border bg-muted/40", className)}
+      className={cn("min-w-0 overflow-hidden rounded-xs border bg-muted/40", className)}
     >
       <div
         className={cn("h-1", side === "blue" ? "bg-side-blue" : "bg-side-red")}
@@ -44,7 +44,7 @@ export function DraftSide({
             />
             {label}
             {mine ? (
-              <span className="rounded-sm bg-foreground/[0.08] px-1.5 py-0.5 text-xs font-normal text-muted-foreground">
+              <span className="rounded-xs bg-foreground/[0.08] px-1.5 py-0.5 text-xs font-normal text-muted-foreground">
                 {ja.draft.mine}
               </span>
             ) : null}

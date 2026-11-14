@@ -53,7 +53,7 @@ export function DraftBans({
         <button
           type="button"
           onClick={clearActive}
-          className="cursor-pointer rounded-sm px-1.5 text-xs text-foreground underline-offset-2 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+          className="cursor-pointer rounded-xs px-1.5 text-xs text-foreground underline-offset-2 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
         >
           {ja.draft.clear}
         </button>

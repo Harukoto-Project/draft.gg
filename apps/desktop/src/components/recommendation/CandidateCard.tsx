@@ -26,7 +26,7 @@ export function CandidateCard({
 }) {
   const score = Math.round(candidate.score * 100);
   return (
-    <li className="overflow-hidden rounded-sm border bg-muted/40">
+    <li className="overflow-hidden rounded-xs border bg-muted/40">
       <button
         type="button"
         disabled={!canPick}
@@ -43,7 +43,7 @@ export function CandidateCard({
         <span className="w-4 shrink-0 text-center text-xs text-muted-foreground tabular-nums">
           {rank}
         </span>
-        <span className="relative size-10 shrink-0 overflow-hidden rounded-sm bg-muted">
+        <span className="relative size-10 shrink-0 overflow-hidden rounded-xs bg-muted">
           {champion ? <ChampionIcon champion={champion} /> : null}
         </span>
         <span className="flex min-w-0 flex-1 items-center gap-2">

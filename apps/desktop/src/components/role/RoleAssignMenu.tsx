@@ -42,7 +42,7 @@ export function RoleAssignMenu({
           title={position ? POSITION_LABELS[position] : ja.draft.roleUnset}
           disabled={disabled}
           className={cn(
-            "inline-flex size-6 shrink-0 items-center justify-center rounded-sm bg-black/55 text-white/80 outline-none transition-colors hover:bg-black/70 focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-0",
+            "inline-flex size-6 shrink-0 items-center justify-center rounded-xs bg-black/55 text-white/80 outline-none transition-colors hover:bg-black/70 focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-0",
             className,
           )}
         >

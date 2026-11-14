@@ -19,7 +19,7 @@ export function RoleTextChip({
       title={title}
       onClick={onClick}
       className={cn(
-        "h-7 shrink-0 cursor-pointer rounded-sm border px-2.5 text-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+        "h-7 shrink-0 cursor-pointer rounded-xs border px-2.5 text-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
         pressed
           ? "border-selection bg-selection/20 text-foreground"
           : "border-border text-muted-foreground hover:text-foreground",

@@ -49,14 +49,15 @@
   --color-selection-foreground: var(--selection-foreground);
   --color-side-blue: var(--side-blue);
   --color-side-red: var(--side-red);
-  /* 角丸は全て rounded-sm(4px)に統一する。components/ui/ など生成物の rounded-md/lg/xl も同じ値にする */
-  --radius-sm: calc(var(--radius) * 0.5);
-  --radius-md: var(--radius-sm);
-  --radius-lg: var(--radius-sm);
-  --radius-xl: var(--radius-sm);
-  --radius-2xl: var(--radius-sm);
-  --radius-3xl: var(--radius-sm);
-  --radius-4xl: var(--radius-sm);
+  /* 角丸は全て rounded-xs(2px)に統一する。components/ui/ など生成物の rounded-sm/md/lg/xl も同じ値にする */
+  --radius-xs: calc(var(--radius) * 0.25);
+  --radius-sm: var(--radius-xs);
+  --radius-md: var(--radius-xs);
+  --radius-lg: var(--radius-xs);
+  --radius-xl: var(--radius-xs);
+  --radius-2xl: var(--radius-xs);
+  --radius-3xl: var(--radius-xs);
+  --radius-4xl: var(--radius-xs);
 }
 
 /*

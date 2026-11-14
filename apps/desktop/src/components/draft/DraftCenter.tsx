@@ -78,7 +78,7 @@ export function DraftCenter({
         ) : null}
         <div
           className={cn(
-            "min-h-0 flex-1 xl:rounded-sm xl:border xl:bg-muted/30 xl:p-3",
+            "min-h-0 flex-1 xl:rounded-xs xl:border xl:bg-muted/30 xl:p-3",
             tab !== "suggestions" && "hidden",
             inspector.open ? "xl:block" : "xl:hidden",
           )}

@@ -33,7 +33,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     >
       <AppTitleBar />
       <AppWindowContent className="flex flex-col overflow-hidden">
-        <main className="mx-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-t-sm border border-b-0 bg-card">
+        <main className="mx-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-t-xs border border-b-0 bg-card">
           {children}
         </main>
         <AppStatusBar />
