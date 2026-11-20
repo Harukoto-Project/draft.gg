@@ -6,9 +6,9 @@ use std::collections::{HashMap, HashSet};
 use crate::composition::score_composition;
 use crate::format::{compare_ids, format_games, format_rate, round4};
 use crate::model::{
-    ActionType, ChampionRef, DraftState, Factors, MatchupStat, MetaStat, PickRecommendations,
-    PoolHintEntry, PoolHints, Position, Preset, ProStat, RecommendationCandidate,
-    RecommendationResponse, Side, StatsSnapshot, SynergyStat,
+    ActionType, ChampionRef, DraftFormat, DraftState, Factors, MatchupStat, MetaStat,
+    PickRecommendations, PoolHintEntry, PoolHints, Position, Preset, ProStat,
+    RecommendationCandidate, RecommendationResponse, Side, StatsSnapshot, SynergyStat,
 };
 use crate::score::{
     mark_role_uncertain, score_ban_meta, score_pick_meta, score_pool, score_pro_ban,
@@ -84,6 +84,7 @@ fn rank_picks(
     let mut candidates = Vec::new();
     let pool = pool_index(input.pools, position);
     let allies = ally_refs(input.draft, indexes);
+    let tournament = is_tournament(input.draft);
 
     for row in input
         .snapshot
@@ -93,6 +94,10 @@ fn rank_picks(
     {
         let champion_id = row.champion_id.as_str();
         if row.role_rate < MAJOR_ROLE_RATE || excluded.contains(champion_id) {
+            continue;
+        }
+        // 大会ではプロの採用がないチャンピオンは出さない
+        if tournament && !indexes.pro.contains_key(&(champion_id, position)) {
             continue;
         }
         let weights = &input.pick_weights;
@@ -203,7 +208,12 @@ fn rank_bans(
 
     let weights = &input.ban_weights;
     let mut candidates = Vec::new();
+    let tournament = is_tournament(input.draft);
     for champion_id in order {
+        // 大会ではプロの採用・BANがないチャンピオンは出さない
+        if tournament && !indexes.pro_by_champion.contains_key(champion_id) {
+            continue;
+        }
         let Some((position, best)) = best_ban_meta(&by_champion[champion_id]) else {
             continue;
         };
@@ -232,6 +242,10 @@ fn rank_bans(
         candidates.push(to_candidate(champion_id, position, indexes, combined));
     }
     sort_and_limit(candidates, input.limit)
+}
+
+fn is_tournament(draft: &DraftState) -> bool {
+    draft.format == DraftFormat::Tournament
 }
 
 fn pro_pick_score(indexes: &Indexes, champion_id: &str, position: Position) -> Option<Scored> {
