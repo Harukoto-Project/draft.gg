@@ -8,9 +8,11 @@ import ja from "@/messages/ja.json";
 /** 提案の対象。ロールを選ぶとソロ向け、「チーム」だと味方の空きロールすべて */
 export function MyRolePicker({
   value,
+  disabled,
   onChange,
 }: {
   value: Position | null;
+  disabled?: boolean;
   onChange: (position: Position | null) => void;
 }) {
   return (
@@ -18,6 +20,7 @@ export function MyRolePicker({
       <span className="mr-1 text-xs text-muted-foreground">{ja.recommendation.myRole}</span>
       <RoleTextChip
         pressed={value === null}
+        disabled={disabled}
         title={ja.recommendation.myRoleTeamHint}
         onClick={() => onChange(null)}
       >
@@ -28,6 +31,7 @@ export function MyRolePicker({
           key={position}
           position={position}
           pressed={value === position}
+          disabled={disabled}
           onClick={() => onChange(value === position ? null : position)}
         />
       ))}

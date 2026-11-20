@@ -24,7 +24,7 @@ import { useInspectorLayout } from "@/hooks/use-inspector-layout";
 import ja from "@/messages/ja.json";
 
 export function DraftToolbar() {
-  const { state, chooseFormat, chooseSide, reset } = useDraft();
+  const { state, locked, chooseFormat, chooseSide, reset } = useDraft();
   const inspector = useInspectorLayout();
   const [pendingFormat, setPendingFormat] = useState<DraftFormat | null>(null);
   const [resetOpen, setResetOpen] = useState(false);
@@ -53,6 +53,7 @@ export function DraftToolbar() {
           variant="outline"
           spacing={0}
           value={state.format}
+          disabled={locked}
           aria-label={ja.draft.format}
           onValueChange={requestFormat}
         >
@@ -68,6 +69,7 @@ export function DraftToolbar() {
           variant="outline"
           spacing={0}
           value={state.mySide}
+          disabled={locked}
           aria-label={ja.draft.mySide}
           onValueChange={(value) => {
             if (value === "blue" || value === "red") chooseSide(value);
@@ -77,6 +79,8 @@ export function DraftToolbar() {
           <ToggleGroupItem value="red">{ja.draft.sideRed}</ToggleGroupItem>
         </ToggleGroup>
       </div>
+
+      {locked ? <p className="text-xs text-muted-foreground">{ja.lcu.lockedHint}</p> : null}
 
       <div className="ml-auto flex items-center gap-2">
         <Button
@@ -96,10 +100,15 @@ export function DraftToolbar() {
         <Button variant="outline" size="sm" disabled={!dirty} onClick={() => setSaveOpen(true)}>
           {ja.drafts.save}
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => setSavedOpen(true)}>
+        <Button variant="ghost" size="sm" disabled={locked} onClick={() => setSavedOpen(true)}>
           {ja.drafts.saved}
         </Button>
-        <Button variant="ghost" size="sm" disabled={!dirty} onClick={() => setResetOpen(true)}>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={locked || !dirty}
+          onClick={() => setResetOpen(true)}
+        >
           {ja.draft.reset}
         </Button>
       </div>

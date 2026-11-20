@@ -2,6 +2,7 @@
 //! 1 つの機能群 = 1 ファイル。増やしたら `lib.rs` の `generate_handler!` に足す。
 
 pub mod drafts;
+pub mod lcu;
 pub mod profiles;
 pub mod snapshot;
 pub mod teams;

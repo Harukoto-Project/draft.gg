@@ -34,7 +34,7 @@ export function RecommendationPanel({
   activeType: "ban" | "pick" | null;
   onPick: (championId: string) => void;
 }) {
-  const { state, ready, chooseMyPosition } = useDraft();
+  const { state, ready, locked, chooseMyPosition } = useDraft();
   const profiles = useProfiles();
   const [playerId, setPlayerId] = useState<string | null>(null);
   const player = profiles.data?.find((profile) => profile.id === playerId);
@@ -65,7 +65,11 @@ export function RecommendationPanel({
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <MyRolePicker value={state.me?.position ?? null} onChange={chooseMyPosition} />
+        <MyRolePicker
+          value={state.me?.position ?? null}
+          disabled={locked}
+          onChange={chooseMyPosition}
+        />
         {showPlayerPicker ? (
           <PlayerPicker
             profiles={profiles.data ?? []}

@@ -19,6 +19,7 @@ export function PickCard({
   position,
   active,
   suggested,
+  locked,
   onSelect,
   onAssign,
   onClear,
@@ -31,6 +32,8 @@ export function PickCard({
   position: Position | null;
   active: boolean;
   suggested: boolean;
+  /** LoL クライアントが盤面を決めている間は、ロールを変えられない */
+  locked: boolean;
   onSelect: () => void;
   onAssign: (position: Position | null) => void;
   onClear: () => void;
@@ -75,7 +78,7 @@ export function PickCard({
           </span>
           <RoleAssignMenu
             position={position}
-            disabled={!filled}
+            disabled={!filled || locked}
             label={formatMessage(ja.draft.roleMenu, { slot: name ? `${label} ${name}` : label })}
             onChange={onAssign}
             className="pointer-events-auto"

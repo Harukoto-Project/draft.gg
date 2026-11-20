@@ -22,7 +22,7 @@ It combines statistics from stat sites with pro-match picks and bans, and sugges
 Draft.GG assists with Summoner's Rift (5v5) drafts. Enter the bans and picks of both teams by hand, and it suggests pick and ban candidates for the current situation.
 
 - It is designed for solo / duo (ranked) and for five-player teams (clash, scrims, tournaments). In team use, one person operates the tool and shares the screen.
-- Input is manual only. There is no integration with the League client.
+- Input is manual by default. While the League client is running, bans, picks, and your own role and side during champion select are reflected on the board in real time (locked-in actions only; no information about anonymized players is read). Manual editing is disabled while the client is driving the board.
 - It does not claim to predict the outcome. It presents numbers and reasons as material for your own decision.
 
 ## Features

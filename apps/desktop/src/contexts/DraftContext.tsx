@@ -13,6 +13,7 @@ import { createContext, useMemo, useState, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 
 import { useHydrated } from "@/hooks/use-hydrated";
+import { useLcu } from "@/hooks/use-lcu";
 import {
   getDraftSnapshot,
   getServerDraft,
@@ -22,6 +23,8 @@ import {
 
 export interface DraftContextValue {
   ready: boolean;
+  /** LoL クライアントがチャンピオンセレクト中で、盤面を決めている間は true。手動の編集は何もしない */
+  locked: boolean;
   state: DraftState;
   activeStep: number | null;
   selectStep: (step: number) => void;
@@ -39,6 +42,22 @@ export interface DraftContextValue {
 
 export const DraftContext = createContext<DraftContextValue | null>(null);
 
+type DraftEditors = Omit<DraftContextValue, "ready" | "locked" | "state" | "activeStep">;
+
+const noop = () => {};
+
+const READ_ONLY_EDITORS: DraftEditors = {
+  selectStep: noop,
+  pickChampion: noop,
+  clearActive: noop,
+  assignRole: noop,
+  chooseFormat: noop,
+  chooseSide: noop,
+  chooseMyPosition: noop,
+  loadDraft: noop,
+  reset: noop,
+};
+
 export function DraftProvider({ children }: { children: ReactNode }) {
   const ready = useHydrated();
   const state = useSyncExternalStore(subscribeDraft, getDraftSnapshot, getServerDraft);
@@ -49,11 +68,10 @@ export function DraftProvider({ children }: { children: ReactNode }) {
   const activeStep =
     selection && selection.format === state.format ? selection.step : nextSuggestedStep(state, -1);
 
-  const value = useMemo<DraftContextValue>(
-    () => ({
-      ready,
-      state,
-      activeStep,
+  const { active: locked } = useLcu();
+
+  const value = useMemo<DraftContextValue>(() => {
+    const editors: DraftEditors = {
       selectStep: (step) => {
         setSelection({ step, format: state.format });
       },
@@ -94,9 +112,10 @@ export function DraftProvider({ children }: { children: ReactNode }) {
         writeDraft(createEmptyDraft({ format: state.format, mySide: state.mySide, me: state.me }));
         setSelection(null);
       },
-    }),
-    [activeStep, ready, state],
-  );
+    };
+    // チャンピオンセレクト中は LoL クライアントが盤面を決めるので、編集は何もしない
+    return { ready, locked, state, activeStep, ...(locked ? READ_ONLY_EDITORS : editors) };
+  }, [activeStep, locked, ready, state]);
 
   return <DraftContext.Provider value={value}>{children}</DraftContext.Provider>;
 }

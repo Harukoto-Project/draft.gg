@@ -1,4 +1,5 @@
 import { InfoDialog } from "@/components/layout/InfoDialog";
+import { LcuStatus } from "@/components/lcu/LcuStatus";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStatus } from "@/hooks/use-status";
@@ -15,7 +16,8 @@ export function AppStatusBar() {
       <div className="flex min-w-0 items-center gap-4" role="status">
         <StatusSummary status={status} />
       </div>
-      <div className="ml-auto flex shrink-0 items-center">
+      <div className="ml-auto flex shrink-0 items-center gap-4">
+        <LcuStatus />
         <InfoDialog />
       </div>
     </footer>
