@@ -17,7 +17,7 @@ export function DraftPicks({
   championsById: ReadonlyMap<string, Champion>;
   className?: string;
 }) {
-  const { state, activeStep, selectStep, clearActive, assignRole } = useDraft();
+  const { state, locked, activeStep, selectStep, clearActive, assignRole } = useDraft();
   const suggested = new Set(suggestedSteps(state));
   const picks = sideTurns(state.format, side, "pick");
   const label = side === "blue" ? ja.draft.sideBlue : ja.draft.sideRed;
@@ -37,6 +37,7 @@ export function DraftPicks({
                 position={championId ? positionOfChampion(state, side, championId) : null}
                 active={activeStep === turn.step}
                 suggested={suggested.has(turn.step)}
+                locked={locked}
                 onSelect={() => selectStep(turn.step)}
                 onAssign={(position) => assignRole(turn.step, position)}
                 onClear={clearActive}

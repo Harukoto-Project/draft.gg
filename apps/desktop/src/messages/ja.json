@@ -172,6 +172,13 @@
       "retryAfter": "あと{minutes}分ほど待ってください。"
     }
   },
+  "lcu": {
+    "disconnected": "LoLクライアント: 未接続",
+    "idle": "LoLクライアント: 接続済み",
+    "unsupported": "LoLクライアント: このモードは対象外",
+    "champSelect": "LoLクライアント: チャンピオンセレクトを反映中",
+    "lockedHint": "チャンピオンセレクトの内容を自動で反映しています。終わるまで、手動の編集はできません。"
+  },
   "status": {
     "patch": "パッチ {version}",
     "patchUnknown": "パッチ未取得",

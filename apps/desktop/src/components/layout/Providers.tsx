@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { LcuProvider } from "@/contexts/LcuContext";
 import { I18nProvider } from "@/lib/ballmac/i18n";
 import ja from "@/messages/ja.json";
 
@@ -34,7 +35,9 @@ export function Providers({ children }: { children: ReactNode }) {
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       <I18nProvider locale="ja" messages={BALLMAC_MESSAGES}>
         <TooltipProvider>
-          <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+          <QueryClientProvider client={queryClient}>
+            <LcuProvider>{children}</LcuProvider>
+          </QueryClientProvider>
         </TooltipProvider>
       </I18nProvider>
     </ThemeProvider>

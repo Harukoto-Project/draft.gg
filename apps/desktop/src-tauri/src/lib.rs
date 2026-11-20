@@ -1,5 +1,6 @@
 mod backdrop;
 mod commands;
+mod lcu_bridge;
 
 use std::sync::Arc;
 
@@ -40,6 +41,8 @@ pub fn run() {
             app.manage(backdrop::Backdrop {
                 mica: backdrop::apply(app.handle()),
             });
+            // LoL クライアントの監視。起動していなくても、見つかるまで探し続ける
+            lcu_bridge::start(app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -47,6 +50,7 @@ pub fn run() {
             commands::snapshot::recommend,
             commands::snapshot::refresh_snapshot,
             commands::snapshot::snapshot_status,
+            commands::lcu::lcu_state,
             commands::profiles::list_profiles,
             commands::profiles::create_profile,
             commands::profiles::update_profile,

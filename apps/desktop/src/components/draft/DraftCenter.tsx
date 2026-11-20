@@ -29,8 +29,9 @@ export function DraftCenter({
   const inspector = useInspectorLayout();
   const [tab, setTab] = useState<Tab>("champions");
   const bodyRef = useRef<HTMLDivElement>(null);
+  // LoL クライアントが盤面を決めている間は、一覧からも推薦からも入れられない
   const activeAction =
-    draft.activeStep === null
+    draft.activeStep === null || draft.locked
       ? undefined
       : draft.state.actions.find((action) => action.step === draft.activeStep);
 
@@ -64,7 +65,7 @@ export function DraftCenter({
         <div className={cn("min-h-0 flex-1", tab !== "champions" && "hidden xl:block")}>
           <ChampionGrid
             taken={championIdsInUse(draft.state)}
-            canPick={draft.activeStep !== null}
+            canPick={activeAction !== undefined}
             onPick={draft.pickChampion}
           />
         </div>
