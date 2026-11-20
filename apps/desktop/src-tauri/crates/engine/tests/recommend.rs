@@ -411,6 +411,34 @@ fn banのプロはロールをまたいだピック数とban数でプレゼン�
     ));
 }
 
+fn tournament_case(format: &str) -> Case {
+    let mut draft = create_draft();
+    draft["format"] = json!(format);
+    create_case(
+        json!({
+            "meta": [meta_row("Ahri", "mid", json!({})), meta_row("Veigar", "mid", json!({}))],
+            "pro": [pro_row("Ahri", "mid", 100, 10, 40, 0.5, 0.5)],
+        }),
+        draft,
+    )
+}
+
+#[test]
+fn 大会ではプロの情報が無いチャンピオンを_ピックにもbanにも出さない() {
+    let result = run(&tournament_case("tournament"));
+
+    assert_eq!(ids(&result.picks[0].candidates), ["Ahri"]);
+    assert_eq!(ids(&result.bans), ["Ahri"]);
+}
+
+#[test]
+fn ランクではプロの情報が無いチャンピオンも候補に出す() {
+    let result = run(&tournament_case("ranked"));
+
+    assert_eq!(ids(&result.picks[0].candidates).len(), 2);
+    assert_eq!(ids(&result.bans).len(), 2);
+}
+
 #[test]
 fn プールが渡されたロールは_プールの習熟度でピック候補を並べ替える() {
     let mut case = create_case(
