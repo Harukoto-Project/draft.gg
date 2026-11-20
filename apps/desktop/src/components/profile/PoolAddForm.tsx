@@ -78,7 +78,7 @@ export function PoolAddForm({
                     onAdd(champion.id, role);
                     setQuery("");
                   }}
-                  className="flex cursor-pointer items-center gap-2 border border-border px-2 py-1 text-sm text-foreground transition-colors hover:border-gold/60 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex cursor-pointer items-center gap-2 border border-border px-2 py-1 text-sm text-foreground transition-colors hover:border-selection/60 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <span className="relative size-6 shrink-0 overflow-hidden bg-muted">
                     <ChampionIcon champion={champion} />

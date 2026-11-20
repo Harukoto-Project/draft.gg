@@ -82,7 +82,7 @@ export function InspectorSplitter({
     >
       <span
         aria-hidden="true"
-        className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border transition-colors group-hover:w-0.5 group-hover:bg-gold/70 group-focus-visible:w-0.5 group-focus-visible:bg-gold group-active:w-0.5 group-active:bg-gold"
+        className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border transition-colors group-hover:w-0.5 group-hover:bg-selection/70 group-focus-visible:w-0.5 group-focus-visible:bg-selection group-active:w-0.5 group-active:bg-selection"
       />
     </div>
   );

@@ -24,3 +24,6 @@ serde = { version = "1", features = ["derive"] }
 tauri = { version = "2", features = [] }
 tauri-plugin-http = "2"
 tauri-plugin-snap-layout = "1"
+
+[target."cfg(windows)".dependencies]
+window-vibrancy = "0.8.1"

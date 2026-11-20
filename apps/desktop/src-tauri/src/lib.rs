@@ -1,3 +1,4 @@
+mod backdrop;
 mod commands;
 
 use std::sync::Arc;
@@ -36,9 +37,13 @@ pub fn run() {
             app.manage(Arc::new(service));
             // プレイヤー・チーム・保存ドラフトは、同じデータフォルダの userdata.json に置く
             app.manage(Storage::open(data_dir));
+            app.manage(backdrop::Backdrop {
+                mica: backdrop::apply(app.handle()),
+            });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            backdrop::window_backdrop,
             commands::snapshot::recommend,
             commands::snapshot::refresh_snapshot,
             commands::snapshot::snapshot_status,

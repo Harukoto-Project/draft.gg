@@ -21,14 +21,14 @@ export function PresetWeights({ preset }: { preset: Preset }) {
   const presetLabel = ja.settings.presets[preset];
 
   return (
-    <section className="flex flex-col gap-4 border border-border bg-card p-4">
+    <section className="flex flex-col gap-4 border-t border-border pt-4 first-of-type:border-t-0 first-of-type:pt-0">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex flex-col gap-1">
           <h2 className="text-base font-semibold text-foreground">{presetLabel}</h2>
           <p className="text-xs text-muted-foreground">{ja.settings.presetDescriptions[preset]}</p>
         </div>
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           disabled={!hasOverrides(overrides, preset)}
           onClick={() => setOverrides(resetPreset(overrides, preset))}

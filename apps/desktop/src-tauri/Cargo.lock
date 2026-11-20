@@ -796,6 +796,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-http",
  "tauri-plugin-snap-layout",
+ "window-vibrancy",
 ]
 
 [[package]]

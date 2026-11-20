@@ -7,6 +7,7 @@ import { actionChampionId, championFor } from "@/lib/draftView";
 import { cn } from "@/lib/utils";
 import ja from "@/messages/ja.json";
 
+/** 1 陣営の BAN 5 枠。見出し行の端に置けるよう、小さな正方形を 1 行に並べる */
 export function DraftBans({
   side,
   championsById,
@@ -27,25 +28,10 @@ export function DraftBans({
   return (
     <section
       aria-label={`${label}の${ja.draft.ban}`}
-      className={cn(
-        "flex min-w-0 flex-col gap-1.5 border-t-2 bg-card p-2",
-        side === "blue" ? "border-side-blue" : "border-side-red",
-        className,
-      )}
+      className={cn("flex min-w-0 items-center gap-2", className)}
     >
-      <h2
-        className={cn(
-          "flex items-baseline gap-2 text-sm font-semibold text-foreground",
-          side === "red" && "flex-row-reverse",
-        )}
-      >
-        {label}
-        {state.mySide === side ? (
-          <span className="text-xs font-normal text-muted-foreground">{ja.draft.mine}</span>
-        ) : null}
-        <span className="text-xs font-normal text-muted-foreground">{ja.draft.ban}</span>
-      </h2>
-      <div className="grid grid-cols-5 gap-1">
+      <span className="text-xs text-muted-foreground">{ja.draft.ban}</span>
+      <div className="flex gap-1">
         {bans.map((turn, index) => {
           const championId = actionChampionId(state, turn.step);
           return (
@@ -58,7 +44,7 @@ export function DraftBans({
               active={activeStep === turn.step}
               suggested={suggested.has(turn.step)}
               onSelect={() => selectStep(turn.step)}
-              className="w-full"
+              className="size-8"
             />
           );
         })}
@@ -67,10 +53,7 @@ export function DraftBans({
         <button
           type="button"
           onClick={clearActive}
-          className={cn(
-            "w-fit cursor-pointer text-xs text-foreground underline-offset-2 hover:underline",
-            side === "red" && "self-end",
-          )}
+          className="cursor-pointer rounded-xs px-1.5 text-xs text-foreground underline-offset-2 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
         >
           {ja.draft.clear}
         </button>

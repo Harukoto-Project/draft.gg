@@ -76,7 +76,7 @@ export function SaveDraftDialog({
             </p>
           ) : null}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {ja.drafts.cancel}
             </Button>
             <Button type="submit" disabled={save.isPending}>

@@ -61,7 +61,11 @@
     "retry": "再読み込み",
     "emptyCatalog": "チャンピオンがまだ取り込まれていません。取り込みが終わってから再読み込みしてください。",
     "slotLabel": "{side}の{type}{index}",
-    "assignRole": "{slot} {champion}を{role}にする"
+    "assignRole": "{slot} {champion}を{role}にする",
+    "roleMenu": "{slot}のロールを選ぶ",
+    "roleUnset": "ロール未設定",
+    "roleClear": "ロールを外す",
+    "emptyPick": "ピック {index}"
   },
   "pro": {
     "title": "プロ統計",

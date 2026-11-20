@@ -30,8 +30,10 @@ export function RoleIconButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "group inline-flex size-6 shrink-0 cursor-pointer items-center justify-center border transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40",
-        pressed ? "border-gold bg-gold/20" : "border-border bg-background/60 hover:border-gold/60",
+        "group inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-xs border transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40",
+        pressed
+          ? "border-selection bg-selection/20"
+          : "border-border bg-background/60 hover:border-selection/60",
         className,
       )}
     >

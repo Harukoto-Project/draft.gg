@@ -37,7 +37,7 @@ export function FactorBars({
           <div key={key} className="col-span-3 grid grid-cols-subgrid items-center">
             <dt className="text-xs text-muted-foreground">{ja.recommendation.factor[label]}</dt>
             <dd className="h-1.5 bg-muted" aria-hidden="true">
-              <span className="block h-full bg-gold" style={{ width: `${percent}%` }} />
+              <span className="block h-full bg-selection" style={{ width: `${percent}%` }} />
             </dd>
             <dd className="w-7 text-right text-xs text-foreground tabular-nums">{percent}</dd>
           </div>

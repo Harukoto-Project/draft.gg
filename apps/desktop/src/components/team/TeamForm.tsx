@@ -86,7 +86,7 @@ export function TeamForm({
                 })}
                 value={current}
                 onChange={(event) => assign(position, event.target.value)}
-                className="h-8 w-full max-w-xs rounded-lg border border-input bg-background px-2 text-sm text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="h-8 w-full max-w-xs rounded-xs border border-input bg-background px-2 text-sm text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 <option value="">{ja.teams.form.unassigned}</option>
                 {profiles.map((profile) => (
